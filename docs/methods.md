@@ -1,12 +1,20 @@
 # Methods
 
-How the dashboard compares renting, a resale HDB flat and a new-launch condo. Last updated 26 Oct 2026.
+How the dashboard compares renting, a resale HDB flat and a new-launch condo. Last updated 26 Oct 2026 (wealth comparison added).
 
 ## The deciding metric
 
-**Net gain at exit** = cash back from the sale − everything paid in.
+**Wealth at exit** (the default, "Compare total wealth" switched on). Net gain on its own favours whichever path puts the most cash into the home, so the fair comparison gives all three cases the same money:
 
-With *time value of money* switched on, it is the NPV of the monthly flows (outflows each month, sale proceeds in the exit month) discounted to the start month at the discount rate.
+- Every case starts with the same **starting cash** (cash plus usable CPF OA) and gets the same **monthly income** (take-home pay plus CPF OA contributions, minus living costs). Income can grow by a set % once a year.
+- Each month: pot = pot × (1 + monthly return) + income − that case's housing outflow. The monthly return is the annual investment return converted to a monthly rate.
+- If a pot goes below zero, that case has run out of cash. The negative balance is charged **shortfall interest** instead of earning the return, and the card shows when it happened and how low it got.
+- Anything a case paid before the start month is taken out of its starting cash.
+- **Wealth at exit** = pot at exit + cash back from the sale. Money put into the home is not double-counted: it leaves the pot when paid and comes back through the sale.
+- The **Net worth** chart shows pot + home equity (value − loan) each month; the last point is after selling.
+- With time value of money on, wealth is also shown in today's dollars (discounted at the discount rate).
+
+**Net gain at exit** = cash back from the sale − everything paid in. It is still shown on each card ("Net gain on housing") and becomes the headline if "Compare total wealth" is switched off. With time value of money on, it is the NPV of the monthly flows at the discount rate.
 
 ## Period
 
@@ -39,11 +47,32 @@ With *time value of money* switched on, it is the NPV of the monthly flows (outf
 - Rent of $2,500/mo from Jul 2027 until TOP.
 - Instalment after CSC about $5,470/mo.
 
+**Cash & income** (placeholders; set your own)
+- Starting cash $600,000, income $8,000 a month with no growth, invested at 4% a year. Shortfall interest 6% a year.
+
 **Growth and exit**
 - HDB 2.0% a year, condo 2.5% a year (the "Base" preset; placeholders, not forecasts).
 - Agent fee 1% on each sale. Legal on sale $2,500 (HDB), $3,000 (condo).
 
 ### Results with the defaults (nominal)
+
+**Wealth at exit** (start $600,000, $8,000/mo, invested at 4%):
+
+| Case | Wealth at exit | Lowest cash balance |
+|---|---|---|
+| Rent | $1,173,526 | $608,000 (Oct 2026) |
+| Resale HDB | $1,285,699 | $388,470 (Jan 2027) |
+| Condo | **$1,297,074** | $41,400 (Oct 2026) |
+
+The condo's lead over the HDB is only about $11K, and it depends on the investment return. With everything else at the defaults:
+
+| Return on invested cash | Rent | Resale HDB | Condo |
+|---|---|---|---|
+| 2.5% | $1,091,456 | $1,230,546 | **$1,277,231** |
+| 4% | $1,173,526 | $1,285,699 | **$1,297,074** |
+| 6% | $1,291,456 | **$1,364,869** | $1,325,220 |
+
+**Net gain at exit:**
 
 | Case | Total paid in | Cash back at exit | Net |
 |---|---|---|---|
@@ -55,7 +84,7 @@ With *time value of money* switched on, it is the NPV of the monthly flows (outf
 - With 0% growth: HDB −$126K, condo −$225K.
 - With time value of money at 2.5%: rent −$184K, HDB −$64K, condo −$23K.
 
-`tools/check.mjs` re-runs the engine on these defaults on every deploy and fails if the nominal figures drift by more than $50.
+`tools/check.mjs` re-runs the engine on these defaults on every deploy and fails if the nominal net gain or wealth figures drift by more than $50.
 
 ## Calculation rules
 
@@ -117,12 +146,12 @@ With *time value of money* switched on, it is the NPV of the monthly flows (outf
 ### Simplifications
 - Interest rates are held flat for the whole period. Bank packages usually reprice after 2–3 years; use the SORA picker to test higher levels.
 - No maintenance fees, property tax or insurance.
-- CPF OA usage and accrued interest are not tracked separately.
+- CPF OA usage and accrued interest are not tracked separately, and CPF held in the pot is assumed to earn the same return as invested cash.
+- Investment returns are steady (no volatility) and untaxed, which is how most Singapore investment gains are treated.
 
 ## Open ideas
 - Let the bank rate reprice after a lock-in period instead of staying flat.
 - Add CPF OA usage and accrued-interest refund tracking.
-- Optionally model renting while investing the cash saved.
 
 ## Sources
 - HDB concessionary rate 2.6%, pegged to CPF OA + 0.1%: HDB / CPF Board quarterly releases, 2026.

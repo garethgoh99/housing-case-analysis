@@ -134,6 +134,7 @@ details.more .grid2{margin-top:10px}
 .pill{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px}
 .pill.ok{background:var(--good-bg);color:var(--good)}
 .pill.bad{background:var(--bad-bg);color:var(--bad)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
 .tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:12px}
 .tabs button{font:inherit;font-weight:600;font-size:13px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:8px 10px;cursor:pointer;margin-bottom:-1px}
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -212,6 +213,31 @@ table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
             <div class="grid2">
               <div class="f"><label for="g.age">Borrower age</label><input type="number" id="g.age" min="21" max="64"><span class="hint">Income-weighted. Loans past age 65 get a lower cap.</span></div>
               <div class="f"><label for="g.income">Household income</label><div class="pre"><span>$</span><input type="number" id="g.income" step="500" min="0" placeholder="optional"></div><span class="hint">Gross per month. Turns on the loan-limit checks.</span></div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Cash & income -->
+      <section class="panel" id="wealthPanel" style="border-top:4px solid var(--accent)">
+        <div class="scen-head"><h2>Cash &amp; income</h2><span class="tag">Same for all 3</span></div>
+        <div class="grid2">
+          <div class="f full"><label class="toggle"><input type="checkbox" id="w.on"> Compare total wealth (recommended)</label>
+            <span class="hint">Every case starts with the same cash and gets the same income each month. Whatever isn't spent on housing is invested, so paying less for housing is rewarded fairly.</span></div>
+          <div class="f key" data-show="w.on"><label for="w.cash">Starting cash <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="w.cash" step="10000" min="0"></div><span class="hint">Cash plus CPF OA you can use today.</span></div>
+          <div class="f key" data-show="w.on"><label for="w.monthly">Monthly income <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="w.monthly" step="500" min="0"></div><span class="hint">Take-home pay plus CPF OA, minus living costs.</span></div>
+          <div class="f full" data-show="w.on"><span class="lab">Return on invested cash</span>
+            <div class="presets" id="retPresets">
+              <button class="btn small" type="button" data-ret="2.5">2.5% CPF OA</button>
+              <button class="btn small" type="button" data-ret="4">4% balanced</button>
+              <button class="btn small" type="button" data-ret="6">6% equity-heavy</button>
+            </div></div>
+          <div class="f" data-show="w.on"><label for="w.ret">Investment return</label><div class="post"><input type="number" id="w.ret" step="0.25" min="-10" max="20"><span>% p.a.</span></div></div>
+          <div class="f" data-show="w.on"><label for="w.incGrowth">Income growth</label><div class="post"><input type="number" id="w.incGrowth" step="0.5" min="-10" max="20"><span>% p.a.</span></div><span class="hint">Steps up once a year.</span></div>
+          <details class="more full" data-show="w.on">
+            <summary>More settings</summary>
+            <div class="grid2">
+              <div class="f"><label for="w.borrow">Shortfall interest</label><div class="post"><input type="number" id="w.borrow" step="0.5" min="0" max="30"><span>% p.a.</span></div><span class="hint">Charged if a case's cash goes below zero.</span></div>
             </div>
           </details>
         </div>
@@ -334,7 +360,9 @@ table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
       <section class="panel">
         <div class="sec-head"><h2>Over time</h2><span class="legend-mini"><span style="--sw:var(--rent)">Rent</span><span style="--sw:var(--hdb)">Resale HDB</span><span style="--sw:var(--condo)">Condo</span></span></div>
         <div class="tabs" role="tablist" id="tabs">
-          <button role="tab" aria-selected="true" data-tab="net" type="button">Net cost (sell any month)</button>
+          <button role="tab" aria-selected="false" data-tab="worth" data-show="w.on" type="button">Net worth</button>
+          <button role="tab" aria-selected="false" data-tab="pot" data-show="w.on" type="button">Invested cash</button>
+          <button role="tab" aria-selected="false" data-tab="net" type="button">Net cost (sell any month)</button>
           <button role="tab" aria-selected="false" data-tab="equity" type="button">Equity built</button>
           <button role="tab" aria-selected="false" data-tab="cum" type="button">Total paid out</button>
           <button role="tab" aria-selected="false" data-tab="monthly" type="button">Monthly cash out</button>
@@ -358,6 +386,7 @@ table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
       <section class="panel foot">
         <h3 style="margin-bottom:6px">How this is worked out</h3>
         <ul>
+          <li><b>Wealth at exit</b> (the fair comparison): all three cases start with the same cash and get the same income every month. Each month, income minus that case's housing costs goes into an invested pot that grows at the return you set; if the pot goes below zero it is charged shortfall interest instead. Wealth at exit = the pot + what the sale returns. Cash or CPF used for the home is not double-counted: it leaves the pot when paid and comes back through the sale.</li>
           <li><b>Exit</b>: both homes are sold in the exit month. Cash back = sale price − loan still owed − agent fee − legal fees − any seller's stamp duty (condo: 16% / 12% / 8% / 4% if sold within 1 / 2 / 3 / 4 years of S&amp;P). <b>Net gain</b> = cash back − everything you paid in. Return on your cash is the annualised IRR of those monthly flows.</li>
           <li>CPF used for the home must be refunded to your CPF account, with accrued interest, when you sell. It's still your money, so it's counted as cash back here.</li>
           <li><b>Equity</b> is the share of the home you own: what you've paid towards the price plus loan principal repaid, plus any price growth you set. Rent builds no equity.</li>
@@ -482,6 +511,23 @@ function simulate(st){
   rent.exit={value:0,costs:0,ssd:0,payoff:0,cashBack:0,yrs:0,growth:0};
   hdb.mopEnd=hKeys+Math.round((+h.mop||0)*12);
 
+  // ---- Cash pot: same starting cash and income for every case; what isn't spent is invested
+  const w=st.w||{}, S0=+w.cash||0, inc0=+w.monthly||0, ig=(+w.incGrowth||0)/100;
+  const rm=Math.pow(1+(+w.ret||0)/100,1/12)-1, bm=Math.pow(1+(+w.borrow||0)/100,1/12)-1;
+  const incomeAt=t=>inc0*Math.pow(1+ig,Math.floor((t-S)/12));
+  const potOf=(o,cb)=>{
+    let pre=0; for(const t in o.out){ if(+t<S) pre+=o.out[t]; }   // paid before the start month comes out of starting cash
+    let P=S0-pre, earned=0, inc=0, min=Infinity, minAt=S, negAt=null; const pot=[], worth=[];
+    for(const t of months){
+      if(t>S){ const it=P*(P>=0?rm:bm); P+=it; earned+=it; }
+      const y=incomeAt(t); inc+=y; P+=y-(o.out[t]||0);
+      if(P<min){min=P;minAt=t;} if(P<0&&negAt==null) negAt=t;
+      pot.push(P); worth.push(P+(o.eq[t]||0));
+    }
+    const potEnd=P; const wealth=P+cb;
+    return {pot,worth,potEnd,wealth,earned,income:inc,start:S0,pre,min,minAt,negAt};
+  };
+
   // ---- Aggregate in period
   const res={months,S,E,df};
   for(const [k,o] of [["rent",rent],["hdb",hdb],["condo",condo]]){
@@ -497,6 +543,9 @@ function simulate(st){
     const npv=cfs.reduce((a,v,i)=>a+v*Math.pow(1+disc,-i/12),0);
     o.irr=k==="rent"?null:irr(cfs);
     o.result={cashBack:cb, gainNominal:cb-cumOutN, gain:cb*df(E)-cumOut, npv, paidNominal:cumOutN};
+    const W=potOf(o,cb); W.worth[W.worth.length-1]=W.wealth;   // last point: after selling (selling costs, SSD, loan paid off)
+    o.wealth=W; o.result.wealth=W.wealth; o.result.wealthD=W.wealth*df(E);
+    series.pot=W.pot.map((v,i)=>v*df(months[i])); series.worth=W.worth.map((v,i)=>v*df(months[i]));
     o.sum={outflow:cumOut, outflowNominal:cumOutN, equityEnd:eqEnd*df(E), equityEndNominal:eqEnd, equityGain:eqEnd*df(E)-eqBefore, net:cumOut-(eqEnd*df(E)-eqBefore), owed:o.bal[E]||0, peak, avg:cumOutN/months.length, endMonthly:o.out[E]||0};
     o.series=series; res[k]=o;
   }
@@ -512,6 +561,7 @@ function fmt(n){ return Math.round(n).toLocaleString("en-SG"); }
 
 const DEFAULTS={
   g:{start:"2026-10",end:"2032-08",sora:1.23,spread:0.30,tvm:false,disc:2.5,age:30,income:""},
+  w:{on:true,cash:600000,monthly:8000,ret:4,incGrowth:0,borrow:6},
   r:{amt:2000,start:"2027-08",stepOn:true,stepDate:"2030-01",amt2:4500,endOn:false,end:"2035-01"},
   h:{price:900000,pay:"2027-01",keys:"2027-08",loanType:"hdb",hdbRate:2.6,rateOv:"",tenure:25,ltv:75,mop:5,legal:3000,absd:"0",reno:0,apprec:2,sellFee:1,sellLegal:2500,rentOn:false,rentAmt:2000,rentStart:"2027-01"},
   c:{price:1980000,otp:"2026-10",sp:"2026-10",top:"2029-04",csc:12,laid:true,rateOv:"",tenure:30,ltv:75,absd:"0",legal:3000,reno:0,apprec:2.5,sellFee:1,sellLegal:3000,rentOn:true,rentAmt:2500,rentStart:"2027-07",stagesAuto:true,stages:null}
@@ -521,6 +571,7 @@ const KEY="housing-case-v2";
 let st;
 try{ st=JSON.parse(localStorage.getItem(KEY)); }catch(e){ st=null; }
 if(!st||!st.g||!st.c) st=structuredClone(DEFAULTS);
+if(!st.w) st.w={};
 for(const k of Object.keys(DEFAULTS)) st[k]={...DEFAULTS[k],...st[k]};
 const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} };
 const get=p=>{const [a,b]=p.split(".");return st[a][b]};
@@ -542,7 +593,7 @@ function syncMonth(el){ const v=get(el.dataset.month); if(!v) return; const [y,m
 document.querySelectorAll("[data-month]").forEach(buildMonth);
 
 /* ---------- plain inputs ---------- */
-const FIELDS=["g.sora","g.spread","g.tvm","g.disc","g.age","g.income","r.amt","r.stepOn","r.amt2","r.endOn","h.price","h.loanType","h.hdbRate","h.rateOv","h.tenure","h.ltv","h.mop","h.legal","h.absd","h.reno","h.apprec","h.rentOn","h.rentAmt","c.price","c.rateOv","c.tenure","c.ltv","c.csc","c.laid","c.absd","c.legal","c.reno","c.apprec","c.rentOn","h.sellFee","h.sellLegal","c.sellFee","c.sellLegal","c.rentAmt"];
+const FIELDS=["w.on","w.cash","w.monthly","w.ret","w.incGrowth","w.borrow","g.sora","g.spread","g.tvm","g.disc","g.age","g.income","r.amt","r.stepOn","r.amt2","r.endOn","h.price","h.loanType","h.hdbRate","h.rateOv","h.tenure","h.ltv","h.mop","h.legal","h.absd","h.reno","h.apprec","h.rentOn","h.rentAmt","c.price","c.rateOv","c.tenure","c.ltv","c.csc","c.laid","c.absd","c.legal","c.reno","c.apprec","c.rentOn","h.sellFee","h.sellLegal","c.sellFee","c.sellLegal","c.rentAmt"];
 FIELDS.forEach(p=>{ const el=$(p); if(!el) return;
   const ev=(el.type==="range"||el.type==="number"||el.type==="text")?"input":"change";
   el.addEventListener(ev,()=>{ let v= el.type==="checkbox"?el.checked : el.value;
@@ -573,6 +624,8 @@ document.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click"
   st.g.end=ms(mopEnd()+(+b.dataset.preset)*12); syncInputs(); onChange("g.end"); }));
 document.querySelectorAll("[data-gp]").forEach(b=>b.addEventListener("click",()=>{
   const [a,c]=b.dataset.gp.split(",").map(Number); st.h.apprec=a; st.c.apprec=c; syncInputs(); onChange("growth"); }));
+document.querySelectorAll("[data-ret]").forEach(b=>b.addEventListener("click",()=>{
+  st.w.ret=+b.dataset.ret; syncInputs(); onChange("w.ret"); }));
 $("resetBtn").addEventListener("click",()=>{ st=structuredClone(DEFAULTS); syncInputs(); onChange("reset"); });
 
 /* ---------- stages table ---------- */
@@ -611,14 +664,16 @@ function syncVisibility(){
 }
 
 /* ---------- chart ---------- */
-let chart=null, tab="net";
+let chart=null, tab=null;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const money=n=>(n<0?"−$":"$")+fmt(Math.abs(n));
 const kfmt=n=>{const a=Math.abs(n);const s=a>=1e6?(a/1e6).toFixed(2).replace(/\.?0+$/,"")+"M":a>=1e3?Math.round(a/1e3)+"K":Math.round(a)+"";return (n<0?"−$":"$")+s;};
-const CAPS={net:"Total paid out minus what you own (home value minus loan), month by month. The last point is after selling. Lower is better; below zero is a profit.",equity:"Value of the share of the home you own (price paid in plus principal repaid, plus any price growth).",cum:"Every dollar paid out so far: rent, downpayments, stamp duty, fees and instalments.",monthly:"Cash leaving your pocket each month. Spikes are downpayments and stamp duty."};
+const CAPS={worth:"Invested cash plus what you own in the home (value minus loan). The last point is after selling, net of agent fees, legal fees and SSD. Higher is better.",pot:"Cash left after housing costs, invested every month. Below zero means that case has run out of cash and is paying shortfall interest.",net:"Total paid out minus what you own (home value minus loan), month by month. The last point is after selling. Lower is better; below zero is a profit.",equity:"Value of the share of the home you own (price paid in plus principal repaid, plus any price growth).",cum:"Every dollar paid out so far: rent, downpayments, stamp duty, fees and instalments.",monthly:"Cash leaving your pocket each month. Spikes are downpayments and stamp duty."};
 function drawChart(sim){
   const labels=sim.months.map(mlab);
-  const key={net:"net",equity:"equity",cum:"cumOut",monthly:"monthly"}[tab];
+  if(!tab||(!st.w.on&&(tab==="worth"||tab==="pot"))) tab=st.w.on?"worth":"net";
+  $("tabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x.dataset.tab===tab));
+  const key={worth:"worth",pot:"pot",net:"net",equity:"equity",cum:"cumOut",monthly:"monthly"}[tab];
   const names={rent:"Rent",hdb:"Resale HDB",condo:"Condo"};
   const ds=["rent","hdb","condo"].map(k=>({label:names[k],data:sim[k].series[key],borderColor:css("--"+k),backgroundColor:css("--"+k),borderWidth:2,pointRadius:0,pointHoverRadius:5,pointHoverBorderWidth:2,pointHoverBorderColor:css("--surface"),tension:0,stepped:tab==="monthly"?"before":false}));
   $("chartCap").textContent=CAPS[tab]+(st.g.tvm?` Discounted at ${st.g.disc}% a year to ${mlab(sim.S)}.`:"");
@@ -629,25 +684,32 @@ function drawChart(sim){
         titleFont:{family:"IBM Plex Sans",weight:"600"},bodyFont:{family:"IBM Plex Mono",size:12},
         callbacks:{label:c=>` ${c.dataset.label}: ${money(c.parsed.y)}`}}},
     scales:{x:{ticks:{color:ink,maxRotation:0,autoSkip:true,maxTicksLimit:9,font:{family:"IBM Plex Mono",size:11}},grid:{display:false},border:{color:grid}},
-      y:{beginAtZero:true,ticks:{color:ink,callback:v=>kfmt(v),font:{family:"IBM Plex Mono",size:11}},grid:{color:grid},border:{display:false}}}};
+      y:{beginAtZero:!(tab==="worth"),ticks:{color:ink,callback:v=>kfmt(v),font:{family:"IBM Plex Mono",size:11}},grid:{color:grid},border:{display:false}}}};
   if(typeof Chart==="undefined"){ $("chartCap").textContent="The chart library couldn't load. The month-by-month table below has the same numbers."; return; }
   if(chart){ chart.data.labels=labels; chart.data.datasets=ds; chart.options=opts; chart.update(); }
   else chart=new Chart($("chart"),{type:"line",data:{labels,datasets:ds},options:opts});
 }
 $("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]"); if(!b) return; tab=b.dataset.tab;
-  $("tabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b)); drawChart(lastSim); });
+  drawChart(lastSim); });
 
 /* ---------- cards & verdict ---------- */
 const pct=(x,d=1)=>x==null?"–":(x*100).toFixed(d)+"%";
 function renderCards(sim){
   const names={rent:"Rent",hdb:"Resale HDB",condo:"Condo"};
-  const tvm=st.g.tvm, val=k=>tvm?sim[k].result.npv:sim[k].result.gainNominal;
+  const tvm=st.g.tvm, wm=!!st.w.on;
+  const val=k=>wm?(tvm?sim[k].result.wealthD:sim[k].result.wealth):(tvm?sim[k].result.npv:sim[k].result.gainNominal);
   const order=["rent","hdb","condo"].sort((a,b)=>val(b)-val(a));
   const best=order[0];
   const word=v=>v>=0?"gain":"loss";
   $("vEyebrow").textContent=`Start ${mlab(sim.S)} → sell ${mlab(sim.E)} · ${(sim.months.length/12).toFixed(1)} years${tvm?` · today's dollars at ${st.g.disc}%`:""}`;
-  $("vHead").textContent= val(best)>=0 ? `${names[best]} leaves you best off: ${money(val(best))} net gain at exit` : `${names[best]} costs you the least: ${money(-val(best))} net loss at exit`;
-  $("vSub").textContent=`Next is ${names[order[1]]} at ${money(val(order[1]))}, then ${names[order[2]]} at ${money(val(order[2]))}. Net = cash back from the sale minus everything you paid in${tvm?", discounted":""}.`;
+  if(wm){
+    const gap=val(best)-val(order[1]);
+    $("vHead").textContent=`${names[best]} leaves you wealthiest: ${money(val(best))} at exit, ${money(gap)} ahead of ${names[order[1]]}`;
+    $("vSub").textContent=`Then ${names[order[1]]} at ${money(val(order[1]))} and ${names[order[2]]} at ${money(val(order[2]))}. Each starts with ${money(+st.w.cash||0)} and gets ${money(+st.w.monthly||0)} a month; whatever isn't spent on housing is invested at ${(+st.w.ret||0)}% a year. Wealth = invested cash + what the sale returns.`;
+  } else {
+    $("vHead").textContent= val(best)>=0 ? `${names[best]} leaves you best off: ${money(val(best))} net gain at exit` : `${names[best]} costs you the least: ${money(-val(best))} net loss at exit`;
+    $("vSub").textContent=`Next is ${names[order[1]]} at ${money(val(order[1]))}, then ${names[order[2]]} at ${money(val(order[2]))}. Net = cash back from the sale minus everything you paid in${tvm?", discounted":""}. Turn on “Compare total wealth” for a like-for-like comparison.`;
+  }
   const inc=+st.g.income||0;
   const box=$("cards"); box.innerHTML="";
   ["rent","hdb","condo"].forEach(k=>{
@@ -662,6 +724,15 @@ function renderCards(sim){
         <div class="sep"></div><dt>Sale price at exit</dt><dd>${money(X.value)}</dd><dt>Less loan payoff</dt><dd>${money(-X.payoff)}</dd><dt>Less selling costs${X.ssd>0?" & SSD":""}</dt><dd>${money(-(X.costs+X.ssd))}</dd><dt><b>Cash back at exit</b></dt><dd><b>${money(X.cashBack)}</b></dd>
         <div class="sep"></div><dt>Price growth</dt><dd>${pct(X.growth)} total</dd><dt>Return on your cash</dt><dd>${pct(o.irr)} a year</dd>`;
     }
+    let wrows="", wnote="";
+    if(wm){
+      const W=o.wealth;
+      wrows=`<dt>Starting cash</dt><dd>${money(W.start)}</dd><dt>Income over the period</dt><dd>${money(W.income)}</dd><dt>Less housing paid out</dt><dd>${money(-R.paidNominal-W.pre)}</dd><dt>Investment growth${W.earned<0?" (net of shortfall interest)":""}</dt><dd>${money(W.earned)}</dd><dt>Invested cash at exit</dt><dd>${money(W.potEnd)}</dd>${k!=="rent"?`<dt>Plus cash back from sale</dt><dd>${money(R.cashBack)}</dd>`:""}<dt><b>Wealth at exit</b></dt><dd><b>${money(W.wealth)}</b></dd>${tvm?`<dt>In today's dollars</dt><dd>${money(R.wealthD)}</dd>`:""}
+        <div class="sep"></div><dt>Net gain on housing</dt><dd>${money(R.gainNominal)}</dd><div class="sep"></div>`;
+      if(W.negAt!=null) wnote=`<div class="afford"><span class="pill bad">Cash runs out ${mlab(W.negAt)} · lowest ${money(W.min)} (${mlab(W.minAt)})</span></div>`;
+      else wnote=`<div class="afford"><span class="pill ok">Lowest cash ${money(W.min)} · ${mlab(W.minAt)}</span></div>`;
+    }
+    rows=wrows+rows;
     let aff="";
     if(inc>0&&k!=="rent"){
       const pills=[];
@@ -673,8 +744,8 @@ function renderCards(sim){
     const lev = (k!=="rent"&&o.irr!=null&&X.yrs>0) ? (()=>{ const g=Math.pow(1+X.growth,1/X.yrs)-1; return `<p class="lev">Price grows ${pct(g)} a year; with the loan, your cash earns ${pct(o.irr)} a year.</p>`;})() : "";
     const el=document.createElement("article"); el.className="card"; el.style.setProperty("--c",`var(--${k})`);
     el.innerHTML=`<div class="ch"><h3><span class="swatch"></span>${names[k]}</h3>${k===best?'<span class="badge">Best at exit</span>':`<span class="tag">${kfmt(v-val(best))} vs best</span>`}</div>
-      <div><div class="eyebrow">Net ${word(v)} at exit${tvm?" (today's $)":""}</div><div class="big" style="color:${v>=0?"var(--good)":"var(--ink)"}">${v>=0?"+":""}${money(v)}</div></div>
-      ${lev}<dl class="kv">${rows}</dl>${aff}`;
+      <div><div class="eyebrow">${wm?"Wealth":"Net "+word(v)} at exit${tvm?" (today's $)":""}</div><div class="big" style="color:${wm?"var(--ink)":v>=0?"var(--good)":"var(--ink)"}">${!wm&&v>=0?"+":""}${money(v)}</div></div>
+      ${wnote}${lev}<dl class="kv">${rows}</dl>${aff}`;
     box.append(el);
   });
 }
@@ -722,21 +793,26 @@ function renderTimeline(sim){
 /* ---------- monthly table ---------- */
 let csvText="";
 function renderTable(sim){
-  const only=$("onlyEvents").checked;
-  const head=["Month","Rent: paid","HDB: paid","HDB: to equity","Condo: paid","Condo: to equity","What happens"];
+  const only=$("onlyEvents").checked, wm=!!st.w.on;
+  const cols=[["Rent: paid",(t,df)=>(sim.rent.out[t]||0)*df,"sum"]];
+  if(wm) cols.push(["Rent: cash",(t,df,i)=>sim.rent.wealth.pot[i]*df,"end"]);
+  cols.push(["HDB: paid",(t,df)=>(sim.hdb.out[t]||0)*df,"sum"],["HDB: to equity",(t,df)=>((sim.hdb.eq[t]||0)-(sim.hdb.eq[t-1]||0))*df,"sum"]);
+  if(wm) cols.push(["HDB: cash",(t,df,i)=>sim.hdb.wealth.pot[i]*df,"end"]);
+  cols.push(["Condo: paid",(t,df)=>(sim.condo.out[t]||0)*df,"sum"],["Condo: to equity",(t,df)=>((sim.condo.eq[t]||0)-(sim.condo.eq[t-1]||0))*df,"sum"]);
+  if(wm) cols.push(["Condo: cash",(t,df,i)=>sim.condo.wealth.pot[i]*df,"end"]);
+  const head=["Month",...cols.map(c=>c[0]),"What happens"];
   const lines=[head]; let html=`<thead><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`;
-  const tot=[0,0,0,0,0];
+  const tot=cols.map(()=>0);
   sim.months.forEach((t,i)=>{
     const df=sim.df(t);
-    const eqd=o=>((o.eq[t]||0)-(o.eq[t-1]||0))*df;
-    const v=[(sim.rent.out[t]||0)*df,(sim.hdb.out[t]||0)*df,eqd(sim.hdb),(sim.condo.out[t]||0)*df,eqd(sim.condo)];
-    v.forEach((x,j)=>tot[j]+=x);
+    const v=cols.map(c=>c[1](t,df,i));
+    v.forEach((x,j)=>{ tot[j]= cols[j][2]==="sum"? tot[j]+x : x; });
     const ev=[...(sim.rent.ev[t]||[]),...(sim.hdb.ev[t]||[]),...(sim.condo.ev[t]||[])];
     lines.push([mlab(t),...v.map(x=>Math.round(x)),ev.join("; ")]);
     if(only&&!ev.length) return;
     html+=`<tr class="${ev.length?"mark":""}"><td>${mlab(t)}</td>${v.map(x=>`<td>${x?money(x):"–"}</td>`).join("")}<td class="ev">${ev.join("<br>")}</td></tr>`;
   });
-  html+=`<tr class="tot"><td>Total</td>${tot.map(x=>`<td>${money(x)}</td>`).join("")}<td class="ev">${st.g.tvm?"Discounted to "+mlab(sim.S):"Nominal dollars"}</td></tr></tbody>`;
+  html+=`<tr class="tot"><td>Total</td>${tot.map(x=>`<td>${money(x)}</td>`).join("")}<td class="ev">${(st.g.tvm?"Discounted to "+mlab(sim.S):"Nominal dollars")+(wm?". Cash columns show the balance at the end of the period, before sale proceeds.":"")}</td></tr></tbody>`;
   lines.push(["Total",...tot.map(x=>Math.round(x)),""]);
   $("mtable").innerHTML=html;
   csvText=lines.map(r=>r.map(c=>typeof c==="string"&&/[,;"]/.test(c)?`"${c.replace(/"/g,'""')}"`:c).join(",")).join("\n");

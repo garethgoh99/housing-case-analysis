@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rent vs Resale HDB vs Private Condo</title>
+<meta name="description" content="Compare renting, buying a resale HDB flat and buying a new-launch condo in Singapore, month by month.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<style>
+/* Layout: control rail on the left (global settings, then one card per scenario), results column on the right; stacks on phones. */
+:root{
+  --bg:#f3f6f5; --surface:#ffffff; --surface-2:#eaefed; --ink:#13201c; --muted:#56655f; --faint:#8a9893; --line:#d9e1de;
+  --accent:#0d5a4b; --accent-ink:#ffffff; --key:#fff1bf; --key-line:#e3c35a; --key-ink:#6b4f00;
+  --good:#11734b; --good-bg:#dff3e8; --warn:#9a5b00; --warn-bg:#fdf0d6; --bad:#b3261e; --bad-bg:#fbe3e1;
+  --rent:#2a78d6; --hdb:#eb6834; --condo:#1baf7a;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1513; --surface:#17201d; --surface-2:#1f2a26; --ink:#e8efec; --muted:#a3b2ac; --faint:#73827c; --line:#2c3833;
+  --accent:#5fc3a8; --accent-ink:#06231c; --key:#3a3113; --key-line:#8a7226; --key-ink:#f3d77a;
+  --good:#6fd6a3; --good-bg:#15372a; --warn:#f0b65a; --warn-bg:#3a2c12; --bad:#ff8a80; --bad-bg:#3d1b19;
+  --rent:#3987e5; --hdb:#d95926; --condo:#199e70; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1513; --surface:#17201d; --surface-2:#1f2a26; --ink:#e8efec; --muted:#a3b2ac; --faint:#73827c; --line:#2c3833;
+  --accent:#5fc3a8; --accent-ink:#06231c; --key:#3a3113; --key-line:#8a7226; --key-ink:#f3d77a;
+  --good:#6fd6a3; --good-bg:#15372a; --warn:#f0b65a; --warn-bg:#3a2c12; --bad:#ff8a80; --bad-bg:#3d1b19;
+  --rent:#3987e5; --hdb:#d95926; --condo:#199e70; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{max-width:1400px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-0.01em}
+h1{font-size:clamp(26px,3.4vw,40px);font-weight:700;line-height:1.1}
+h2{font-size:18px;font-weight:700}
+h3{font-size:15px;font-weight:700}
+a{color:var(--accent)}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+header.top p{margin:6px 0 0;max-width:68ch;color:var(--muted)}
+.vs{color:var(--faint);font-weight:500}
+.layout{display:grid;grid-template-columns:minmax(320px,400px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:960px){.layout{grid-template-columns:minmax(0,1fr)}}
+.rail{display:flex;flex-direction:column;gap:14px;min-width:0}
+.main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.scen{border-top:4px solid var(--c)}
+.scen-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.swatch{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:8px;vertical-align:1px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.grid2 .full{grid-column:1/-1}
+@media (max-width:420px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f label,.f .lab{font-size:12px;font-weight:600;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.f .hint{font-size:11.5px;color:var(--faint);line-height:1.35}
+.f.key{background:var(--key);border:1px solid var(--key-line);border-radius:8px;padding:8px}
+.f.key label,.f.key .lab{color:var(--key-ink)}
+.chip-key{font-size:10px;letter-spacing:.06em;text-transform:uppercase;background:var(--key-line);color:var(--surface);padding:0 5px;border-radius:4px;font-weight:700}
+input[type=number],input[type=text],select{font:inherit;font-family:var(--f-mono);font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 9px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pre{position:relative}
+.pre span{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--faint);font-family:var(--f-mono);font-size:13px;pointer-events:none}
+.pre input{padding-left:22px}
+.post{position:relative}
+.post span{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--faint);font-family:var(--f-mono);font-size:12px;pointer-events:none}
+.post input{padding-right:40px}
+.mp{display:grid;grid-template-columns:1fr 1.1fr;gap:6px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;cursor:pointer}
+.toggle input{width:16px;height:16px;accent-color:var(--accent)}
+details.more{border-top:1px dashed var(--line);margin-top:12px;padding-top:10px}
+details.more summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--accent);list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"+ ";font-family:var(--f-mono)}
+details.more[open] summary::before{content:"– "}
+details.more .grid2{margin-top:10px}
+.sub{font-size:12px;font-weight:700;color:var(--ink);margin:14px 0 6px;grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.derived{grid-column:1/-1;background:var(--surface-2);border-radius:8px;padding:8px 10px;font-size:12.5px;display:grid;grid-template-columns:1fr auto;gap:2px 12px}
+.derived .num{text-align:right}
+.note{font-size:12px;border-radius:7px;padding:6px 9px;grid-column:1/-1}
+.note.warn{background:var(--warn-bg);color:var(--warn)}
+.note.bad{background:var(--bad-bg);color:var(--bad)}
+.note.ok{background:var(--good-bg);color:var(--good)}
+.btn{font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:6px 10px;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.small{font-size:11.5px;padding:3px 8px}
+.rates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.rates button{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:6px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0}
+.rates button .num{font-size:13px}
+.rates button small{font-size:10.5px;color:var(--muted)}
+.rates button.cur{font-weight:700;border:2px solid var(--accent)}
+.rates button.cur small{color:var(--accent);font-weight:700}
+.rates button.sel{background:var(--accent);color:var(--accent-ink)}
+.rates button.sel small{color:var(--accent-ink)}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+/* stage table */
+.stages{grid-column:1/-1;overflow-x:auto}
+.stages table{width:100%;border-collapse:collapse;font-size:12.5px}
+.stages th{font-size:11px;text-align:left;color:var(--muted);font-weight:600;padding:4px}
+.stages td{padding:3px 4px;border-top:1px solid var(--line);vertical-align:middle}
+.stages td.n{font-family:var(--f-mono);text-align:right;white-space:nowrap}
+.stages input{padding:4px 6px;font-size:12.5px}
+.stages .mp{min-width:150px}
+.stages select{padding:4px 4px;font-size:12px}
+.tag{font-size:10.5px;padding:1px 6px;border-radius:999px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.tag.cash{background:var(--key);color:var(--key-ink)}
+/* results */
+.verdict{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;background:var(--accent);color:var(--accent-ink);border-radius:var(--r);padding:16px 18px}
+.verdict h2{font-size:clamp(18px,2.2vw,24px)}
+.verdict p{margin:2px 0 0;opacity:.9;max-width:70ch}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.cards{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card .ch{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--good-bg);color:var(--good)}
+.big{font-family:var(--f-display);font-size:28px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:12.5px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.kv .sep{grid-column:1/-1;border-top:1px solid var(--line);margin:2px 0}
+.bar{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;display:flex;gap:2px}
+.bar i{display:block;height:100%}
+.lev{margin:0;font-size:12.5px;background:var(--surface-2);border-radius:7px;padding:6px 9px}
+.legend-mini{display:flex;gap:12px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.legend-mini span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;background:var(--sw);vertical-align:0}
+.afford{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px}
+.pill.ok{background:var(--good-bg);color:var(--good)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:12px}
+.tabs button{font:inherit;font-weight:600;font-size:13px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:8px 10px;cursor:pointer;margin-bottom:-1px}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.chartbox{position:relative;height:340px}
+@media (max-width:600px){.chartbox{height:280px}}
+.chart-cap{font-size:12.5px;color:var(--muted);margin:0 0 8px}
+/* timeline */
+.tl{display:flex;flex-direction:column;gap:14px;overflow-x:auto}
+.tl-row{display:grid;grid-template-columns:90px minmax(520px,1fr);gap:10px;align-items:center}
+.tl-row .nm{font-size:12px;font-weight:600}
+.track{position:relative;height:34px;border-radius:6px;background:var(--surface-2)}
+.seg{position:absolute;top:12px;height:10px;border-radius:3px;opacity:.85}
+.track .ev{position:absolute;top:4px;width:2px;height:26px;background:var(--ink);}
+.track .ev b{position:absolute;top:-2px;left:4px;font-size:10px;font-weight:600;white-space:nowrap;color:var(--ink);font-family:var(--f-body)}
+.track .ev.lo b{top:16px}
+.axis{position:relative;height:16px;margin-left:100px;min-width:520px}
+.axis span{position:absolute;font-size:10.5px;color:var(--faint);transform:translateX(-50%);font-family:var(--f-mono)}
+/* table */
+.tablewrap{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:8px}
+table.m{border-collapse:collapse;width:100%;font-size:12.5px;min-width:820px}
+table.m th{position:sticky;top:0;background:var(--surface-2);text-align:right;padding:6px 8px;font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+table.m th:first-child,table.m td:first-child{text-align:left}
+table.m td{padding:4px 8px;border-top:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.m td.ev{font-family:var(--f-body);text-align:left;color:var(--muted);white-space:normal;min-width:220px}
+table.m tr.mark td{background:color-mix(in srgb,var(--key) 55%,transparent)}
+table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
+.sec-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.foot{font-size:12px;color:var(--muted);max-width:90ch}
+.foot li{margin-bottom:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Housing case analysis · Singapore</div>
+      <h1>Rent <span class="vs">vs</span> Resale HDB <span class="vs">vs</span> Private Condo</h1>
+      <p>Change the yellow <b>key</b> fields first. Everything else is prefilled with estimates for late 2026, and you can open “More settings” on any card to fine-tune it. Your inputs are saved in this browser only.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="resetBtn" type="button">Reset to defaults</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- ===== Inputs ===== -->
+    <aside class="rail" aria-label="Inputs">
+      <section class="panel" id="globalPanel">
+        <div class="scen-head"><h2>Period &amp; rates</h2></div>
+        <div class="grid2">
+          <div class="f key"><span class="lab">Start (today) <span class="chip-key">Key</span></span><div class="mp" data-month="g.start"></div></div>
+          <div class="f key"><span class="lab">Exit (sell) <span class="chip-key">Key</span></span><div class="mp" data-month="g.end"></div></div>
+          <div class="note warn" id="exitNote" hidden></div>
+          <div class="f full"><span class="lab">Quick exit dates</span>
+            <div class="presets">
+              <button class="btn small" type="button" data-preset="0">Earliest (HDB MOP ends)</button>
+              <button class="btn small" type="button" data-preset="2">MOP + 2 yrs</button>
+              <button class="btn small" type="button" data-preset="5">MOP + 5 yrs</button>
+              <button class="btn small" type="button" data-preset="10">MOP + 10 yrs</button>
+            </div>
+          </div>
+          <div class="f full"><span class="lab">3-month compounded SORA (bank loan benchmark)</span>
+            <div class="rates" id="soraPick"></div>
+            <span class="hint"><b>Bold</b> = SORA on 5 Oct 2026 (1.23%). Pick another level to stress-test, or type your own below.</span>
+          </div>
+          <div class="f"><label for="g.sora">SORA</label><div class="post"><input type="number" id="g.sora" step="0.01" min="0" max="10"><span>% p.a.</span></div></div>
+          <div class="f"><label for="g.spread">Bank spread over SORA</label><div class="post"><input type="number" id="g.spread" step="0.05" min="0" max="3"><span>% p.a.</span></div></div>
+          <div class="derived"><span>Bank home-loan rate used</span><span class="num" id="d.bank"></span></div>
+          <div class="f full"><label class="toggle"><input type="checkbox" id="g.tvm"> Account for time value of money</label>
+            <span class="hint">Discounts each month's cash flow, and the sale proceeds, back to the start month, so money paid later counts for less.</span></div>
+          <div class="f" id="discWrap"><label for="g.disc">Discount rate</label><div class="post"><input type="number" id="g.disc" step="0.1" min="0" max="15"><span>% p.a.</span></div><span class="hint">Default 2.5% = CPF OA rate, what your cash would otherwise earn.</span></div>
+          <details class="more full">
+            <summary>More settings</summary>
+            <div class="grid2">
+              <div class="f"><label for="g.age">Borrower age</label><input type="number" id="g.age" min="21" max="64"><span class="hint">Income-weighted. Loans past age 65 get a lower cap.</span></div>
+              <div class="f"><label for="g.income">Household income</label><div class="pre"><span>$</span><input type="number" id="g.income" step="500" min="0" placeholder="optional"></div><span class="hint">Gross per month. Turns on the loan-limit checks.</span></div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Rent -->
+      <section class="panel scen" style="--c:var(--rent)" id="rentPanel">
+        <div class="scen-head"><h2><span class="swatch"></span>Rent</h2><span class="tag">No purchase</span></div>
+        <div class="grid2">
+          <div class="f key"><label for="r.amt">Monthly rent <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="r.amt" step="100" min="0"></div></div>
+          <div class="f key"><span class="lab">Rent starts <span class="chip-key">Key</span></span><div class="mp" data-month="r.start"></div></div>
+          <div class="f full"><label class="toggle"><input type="checkbox" id="r.stepOn"> Rent changes later</label></div>
+          <div class="f" data-show="r.stepOn"><span class="lab">From</span><div class="mp" data-month="r.stepDate"></div></div>
+          <div class="f" data-show="r.stepOn"><label for="r.amt2">New monthly rent</label><div class="pre"><span>$</span><input type="number" id="r.amt2" step="100" min="0"></div></div>
+          <details class="more full">
+            <summary>More settings</summary>
+            <div class="grid2">
+              <div class="f full"><label class="toggle"><input type="checkbox" id="r.endOn"> Stop renting before the period ends</label></div>
+              <div class="f" data-show="r.endOn"><span class="lab">Last month of rent</span><div class="mp" data-month="r.end"></div></div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- HDB -->
+      <section class="panel scen" style="--c:var(--hdb)" id="hdbPanel">
+        <div class="scen-head"><h2><span class="swatch"></span>Resale HDB</h2><span class="tag" id="hdbLoanTag"></span></div>
+        <div class="grid2">
+          <div class="f key full"><label for="h.price">Resale price <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="h.price" step="5000" min="0"></div></div>
+          <div class="f key"><span class="lab">Completion (payment) <span class="chip-key">Key</span></span><div class="mp" data-month="h.pay"></div><span class="hint">Downpayment, stamp duty and loan drawn.</span></div>
+          <div class="f key"><span class="lab">Key collection <span class="chip-key">Key</span></span><div class="mp" data-month="h.keys"></div><span class="hint">MOP counts from here.</span></div>
+          <div class="f full"><label for="h.loanType">Loan</label>
+            <select id="h.loanType"><option value="hdb">HDB concessionary loan</option><option value="bank">Bank loan (SORA-based)</option></select></div>
+          <div class="f" data-show-val="h.loanType=hdb"><label for="h.hdbRate">HDB loan rate</label><div class="post"><input type="number" id="h.hdbRate" step="0.05" min="0"><span>% p.a.</span></div><span class="hint">CPF OA 2.5% + 0.1%.</span></div>
+          <div class="f" data-show-val="h.loanType=bank"><label for="h.rateOv">Rate override</label><div class="post"><input type="number" id="h.rateOv" step="0.05" min="0" placeholder="uses bank rate"><span>% p.a.</span></div></div>
+          <div class="f"><label for="h.tenure">Tenure</label><div class="post"><input type="number" id="h.tenure" min="5" max="30"><span>years</span></div></div>
+          <div class="f full"><label for="h.ltv">Loan size: <span class="num" id="h.ltvLab"></span> of price</label><input type="range" id="h.ltv" min="0" max="75" step="1" style="accent-color:var(--hdb)"><span class="hint" id="h.capHint"></span></div>
+          <div class="note" id="h.capNote" hidden></div>
+          <div class="derived" id="h.derived"></div>
+          <details class="more full">
+            <summary>More settings</summary>
+            <div class="grid2">
+              <div class="f"><label for="h.mop">MOP</label><div class="post"><input type="number" id="h.mop" min="0" max="10"><span>years</span></div></div>
+              <div class="f"><label for="h.legal">Legal &amp; valuation</label><div class="pre"><span>$</span><input type="number" id="h.legal" step="500" min="0"></div></div>
+              <div class="f"><label for="h.absd">ABSD</label><select id="h.absd"><option value="0">None (first home)</option><option value="5">5% (PR, first home)</option><option value="20">20% (citizen, 2nd home)</option></select></div>
+              <div class="f"><label for="h.reno">Renovation &amp; furnishing</label><div class="pre"><span>$</span><input type="number" id="h.reno" step="1000" min="0"></div><span class="hint">Paid at key collection. Not equity.</span></div>
+              <div class="sub">Rent before key collection</div>
+              <div class="f full"><label class="toggle"><input type="checkbox" id="h.rentOn"> I'll rent before key collection</label></div>
+              <div class="f" data-show="h.rentOn"><label for="h.rentAmt">Monthly rent</label><div class="pre"><span>$</span><input type="number" id="h.rentAmt" step="100" min="0"></div></div>
+              <div class="f" data-show="h.rentOn"><span class="lab">From</span><div class="mp" data-month="h.rentStart"></div></div>
+              <div class="f full hint" data-show="h.rentOn">Rent runs until the month before key collection.</div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Condo -->
+      <section class="panel scen" style="--c:var(--condo)" id="condoPanel">
+        <div class="scen-head"><h2><span class="swatch"></span>New-launch condo</h2><span class="tag">Progressive payment</span></div>
+        <div class="grid2">
+          <div class="f key full"><label for="c.price">Purchase price <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="c.price" step="10000" min="0"></div></div>
+          <div class="f key"><span class="lab">Option (OTP) <span class="chip-key">Key</span></span><div class="mp" data-month="c.otp"></div></div>
+          <div class="f key"><span class="lab">Expected TOP <span class="chip-key">Key</span></span><div class="mp" data-month="c.top"></div><span class="hint">Key collection.</span></div>
+          <div class="f"><label for="c.rateOv">Rate override</label><div class="post"><input type="number" id="c.rateOv" step="0.05" min="0" placeholder="uses bank rate"><span>% p.a.</span></div></div>
+          <div class="f"><label for="c.tenure">Tenure</label><div class="post"><input type="number" id="c.tenure" min="5" max="35"><span>years</span></div></div>
+          <div class="f full"><label for="c.ltv">Loan size: <span class="num" id="c.ltvLab"></span> of price</label><input type="range" id="c.ltv" min="0" max="75" step="1" style="accent-color:var(--condo)"><span class="hint" id="c.capHint"></span></div>
+          <div class="note" id="c.capNote" hidden></div>
+          <div class="f full"><label class="toggle"><input type="checkbox" id="c.rentOn"> I'll rent while it's being built</label></div>
+          <div class="f" data-show="c.rentOn"><label for="c.rentAmt">Monthly rent</label><div class="pre"><span>$</span><input type="number" id="c.rentAmt" step="100" min="0"></div></div>
+          <div class="f" data-show="c.rentOn"><span class="lab">From</span><div class="mp" data-month="c.rentStart"></div><span class="hint">Runs until TOP.</span></div>
+          <div class="derived" id="c.derived"></div>
+          <details class="more full" id="condoMore">
+            <summary>More settings &amp; payment milestones</summary>
+            <div class="grid2">
+              <div class="f"><span class="lab">S&amp;P signed</span><div class="mp" data-month="c.sp"></div><span class="hint">Usually ~8 weeks after OTP.</span></div>
+              <div class="f"><label for="c.csc">CSC after TOP</label><div class="post"><input type="number" id="c.csc" min="0" max="48"><span>months</span></div></div>
+              <div class="f full"><label class="toggle"><input type="checkbox" id="c.laid"> Foundation already laid (billed at S&amp;P)</label></div>
+              <div class="f"><label for="c.absd">ABSD</label><select id="c.absd"><option value="0">None (first home)</option><option value="5">5% (PR, first home)</option><option value="20">20% (citizen, 2nd home)</option><option value="30">30% (PR, 2nd home)</option><option value="60">60% (foreigner)</option></select></div>
+              <div class="f"><label for="c.legal">Legal fees</label><div class="pre"><span>$</span><input type="number" id="c.legal" step="500" min="0"></div></div>
+              <div class="f"><label for="c.reno">Renovation &amp; furnishing</label><div class="pre"><span>$</span><input type="number" id="c.reno" step="1000" min="0"></div><span class="hint">Paid at TOP. Not equity.</span></div>
+              <div class="sub"><span>Payment milestones</span><span style="display:flex;gap:6px;align-items:center"><span class="tag" id="stageMode"></span><button class="btn small" type="button" id="reEst">Re-estimate</button></span></div>
+              <div class="stages"><table><thead><tr><th>Stage</th><th>Billed</th><th style="text-align:right">%</th><th style="text-align:right">Paid by</th></tr></thead><tbody id="stageBody"></tbody></table></div>
+              <div class="note" id="stageNote" hidden></div>
+            </div>
+          </details>
+        </div>
+      </section>
+      <section class="panel" id="growthPanel" style="border-top:4px solid var(--accent)">
+        <div class="scen-head"><h2>Growth &amp; exit</h2><span class="tag">Sell at exit date</span></div>
+        <div class="grid2">
+          <div class="f full"><span class="lab">Growth outlook</span>
+            <div class="presets" id="growthPresets">
+              <button class="btn small" type="button" data-gp="0,0">Flat 0%</button>
+              <button class="btn small" type="button" data-gp="1,1.5">Cautious</button>
+              <button class="btn small" type="button" data-gp="2,2.5">Base</button>
+              <button class="btn small" type="button" data-gp="3.5,4">Strong</button>
+            </div>
+            <span class="hint">Base is a rough guide from recent years, not a forecast. Set your own below.</span>
+          </div>
+          <div class="f key"><label for="h.apprec">Resale HDB growth <span class="chip-key">Key</span></label><div class="post"><input type="number" id="h.apprec" step="0.25" min="-10" max="15"><span>% p.a.</span></div></div>
+          <div class="f key"><label for="c.apprec">Condo growth <span class="chip-key">Key</span></label><div class="post"><input type="number" id="c.apprec" step="0.25" min="-10" max="15"><span>% p.a.</span></div></div>
+          <div class="f"><label for="h.sellFee">HDB agent fee</label><div class="post"><input type="number" id="h.sellFee" step="0.25" min="0" max="5"><span>% of sale</span></div></div>
+          <div class="f"><label for="c.sellFee">Condo agent fee</label><div class="post"><input type="number" id="c.sellFee" step="0.25" min="0" max="5"><span>% of sale</span></div></div>
+          <div class="f"><label for="h.sellLegal">HDB legal on sale</label><div class="pre"><span>$</span><input type="number" id="h.sellLegal" step="500" min="0"></div></div>
+          <div class="f"><label for="c.sellLegal">Condo legal on sale</label><div class="pre"><span>$</span><input type="number" id="c.sellLegal" step="500" min="0"></div></div>
+          <div class="derived" id="exitDerived"></div>
+          <span class="hint full">Growth starts at HDB completion and at the condo's S&amp;P date. Seller's stamp duty applies to the condo if sold within 4 years.</span>
+        </div>
+      </section>
+    </aside>
+
+    <!-- ===== Results ===== -->
+    <main class="main" aria-label="Results">
+      <section class="verdict" aria-live="polite">
+        <div><div class="eyebrow" style="color:inherit;opacity:.8" id="vEyebrow"></div><h2 id="vHead"></h2><p id="vSub"></p></div>
+      </section>
+
+      <section class="cards" id="cards"></section>
+
+      <section class="panel">
+        <div class="sec-head"><h2>Over time</h2><span class="legend-mini"><span style="--sw:var(--rent)">Rent</span><span style="--sw:var(--hdb)">Resale HDB</span><span style="--sw:var(--condo)">Condo</span></span></div>
+        <div class="tabs" role="tablist" id="tabs">
+          <button role="tab" aria-selected="true" data-tab="net" type="button">Net cost (sell any month)</button>
+          <button role="tab" aria-selected="false" data-tab="equity" type="button">Equity built</button>
+          <button role="tab" aria-selected="false" data-tab="cum" type="button">Total paid out</button>
+          <button role="tab" aria-selected="false" data-tab="monthly" type="button">Monthly cash out</button>
+        </div>
+        <p class="chart-cap" id="chartCap"></p>
+        <div class="chartbox"><canvas id="chart" aria-label="Comparison chart"></canvas></div>
+      </section>
+
+      <section class="panel">
+        <div class="sec-head"><h2>Timeline</h2><span class="legend-mini"><span style="--sw:var(--faint)">Renting</span><span style="--sw:var(--c,var(--accent))">Loan repaying</span></span></div>
+        <div class="tl" id="timeline"></div>
+      </section>
+
+      <section class="panel">
+        <div class="sec-head"><h2>Month by month</h2>
+          <div style="display:flex;gap:6px;flex-wrap:wrap"><label class="toggle" style="font-size:12.5px"><input type="checkbox" id="onlyEvents"> Milestone months only</label><button class="btn small" type="button" id="copyCsv">Copy as CSV</button></div></div>
+        <div class="tablewrap"><table class="m" id="mtable"></table></div>
+        <textarea id="csvFallback" class="sr" aria-hidden="true" tabindex="-1"></textarea>
+      </section>
+
+      <section class="panel foot">
+        <h3 style="margin-bottom:6px">How this is worked out</h3>
+        <ul>
+          <li><b>Exit</b>: both homes are sold in the exit month. Cash back = sale price − loan still owed − agent fee − legal fees − any seller's stamp duty (condo: 16% / 12% / 8% / 4% if sold within 1 / 2 / 3 / 4 years of S&amp;P). <b>Net gain</b> = cash back − everything you paid in. Return on your cash is the annualised IRR of those monthly flows.</li>
+          <li>CPF used for the home must be refunded to your CPF account, with accrued interest, when you sell. It's still your money, so it's counted as cash back here.</li>
+          <li><b>Equity</b> is the share of the home you own: what you've paid towards the price plus loan principal repaid, plus any price growth you set. Rent builds no equity.</li>
+          <li><b>Money not coming back</b> is total paid out minus equity gained: rent, loan interest, stamp duty, legal fees and renovation.</li>
+          <li>The exit date can't be earlier than the end of the HDB MOP, so all three cases are compared over the same period.</li>
+          <li>Loan limits follow MAS rules: up to 75% of price, dropping to 55% if the tenure is over 25 years (HDB flats) or 30 years (private), or runs past age 65. The HDB loan is capped at 25 years.</li>
+          <li>Condo progressive payments: you pay the first stages yourself until your share (100% minus the loan %) is covered, then the bank pays the rest stage by stage. Instalments start the month after each disbursement and are recalculated over the remaining tenure.</li>
+          <li>Rates are held flat for the whole period. Bank packages usually reprice after 2–3 years, so use the SORA picker to test higher rates.</li>
+          <li>Stamp duty uses IRAS residential BSD tiers (1% to 6%). Loan checks use MAS limits: HDB instalment up to 30% of income (MSR); total debt up to 55% (TDSR) at a 4% stress rate. Rough guide only, not financial advice.</li>
+        </ul>
+        <p style="margin:8px 0 0">Full methods: <a href="https://github.com/garethgoh99/housing-case-analysis/blob/main/docs/methods.md">docs/methods.md</a>. Sister projects: <a href="https://garethgoh99.github.io/hdb-resale-dashboard/">HDB Resale Price Explorer</a> · <a href="https://garethgoh99.github.io/private-condo-analysis/">Private Residential Explorer</a>.</p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ================= ENGINE (pure functions) ================= */
+const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const mi=s=>{const [y,m]=s.split("-").map(Number);return y*12+(m-1)};
+const ms=i=>`${Math.floor(i/12)}-${String(i%12+1).padStart(2,"0")}`;
+const mlab=i=>`${MN[i%12]} ${Math.floor(i/12)}`;
+function pmt(i,n,P){ if(P<=0||n<=0) return 0; if(i===0) return P/n; return P*i/(1-Math.pow(1+i,-n)); }
+function bsd(p){ const t=[[180e3,.01],[180e3,.02],[640e3,.03],[500e3,.04],[1.5e6,.05],[Infinity,.06]]; let tax=0,rem=p; for(const [c,r] of t){const x=Math.min(rem,c); tax+=x*r; rem-=x; if(rem<=0)break;} return tax; }
+function ltvCap(kind,tenure,age){ // kind: hdbloan | bankhdb | private
+  const ageOk = age+tenure<=65;
+  if(kind==="hdbloan") return {cap: ageOk?75:55, maxT:25, why: ageOk?"":"loan runs past age 65"};
+  const lim = kind==="bankhdb"?25:30;
+  const ok = tenure<=lim && ageOk;
+  return {cap: ok?75:55, maxT: kind==="bankhdb"?30:35, why: ok?"": (tenure>lim?`tenure over ${lim} years`:"loan runs past age 65")};
+}
+const STAGES=[["Option (OTP)",5],["S&P agreement",15],["Foundation",10],["Reinforced concrete",10],["Brick walls",5],["Ceiling & roofing",5],["Wiring, plumbing & windows",5],["Car park, roads & drains",5],["TOP",25],["CSC",15]];
+function autoStages(c){
+  const otp=mi(c.otp), sp=mi(c.sp), top=mi(c.top), span=Math.max(0,top-sp);
+  const at=f=>ms(sp+Math.round(f*span));
+  const d=[c.otp,c.sp, c.laid?c.sp:at(.15), at(.40),at(.60),at(.73),at(.83),at(.93), c.top, ms(top+ (+c.csc||0))];
+  return STAGES.map(([n,p],k)=>({name:n,pct:p,date:d[k]}));
+}
+function rateBank(g){return (+g.sora||0)+(+g.spread||0);}
+
+function simulate(st){
+  const g=st.g, S=mi(g.start), E=Math.max(mi(g.end),S);
+  const months=[]; for(let t=S;t<=E;t++) months.push(t);
+  const disc=g.tvm?(+g.disc||0)/100:0;
+  const df=t=>Math.pow(1+disc,-(t-S)/12);
+
+  // ---- Rent
+  const r=st.r; const rS=mi(r.start), rEnd=r.endOn?mi(r.end):E;
+  const rent={out:{},eq:{},bal:{},ev:{}};
+  for(const t of months){ let a=0; if(t>=rS&&t<=rEnd){ a=(r.stepOn&&t>=mi(r.stepDate))?+r.amt2:+r.amt; } rent.out[t]=a; rent.eq[t]=0; rent.bal[t]=0; }
+  rent.ev[rS]=["Rent starts"]; if(r.stepOn) (rent.ev[mi(r.stepDate)]=rent.ev[mi(r.stepDate)]||[]).push(`Rent → $${fmt(+r.amt2)}`);
+
+  // ---- HDB
+  const h=st.h, hp=+h.price||0, age=+g.age||30;
+  const hKind=h.loanType==="hdb"?"hdbloan":"bankhdb";
+  let hTen=Math.max(1,+h.tenure||1); const hc=ltvCap(hKind,hTen,age); hTen=Math.min(hTen,hc.maxT);
+  const hLtv=Math.min(+h.ltv||0,hc.cap)/100;
+  const hRate=(h.loanType==="hdb"?(+h.hdbRate||0):(h.rateOv!==""&&h.rateOv!=null?+h.rateOv:rateBank(g)))/100;
+  const hLoan=hp*hLtv, hDown=hp-hLoan, hBsd=bsd(hp), hAbsd=hp*(+h.absd||0)/100;
+  const hUp=hDown+hBsd+hAbsd+(+h.legal||0);
+  const hPay=mi(h.pay), hKeys=mi(h.keys), hInst=pmt(hRate/12,hTen*12,hLoan);
+  const hdb={out:{},eq:{},bal:{},ev:{},loan:hLoan,rate:hRate,inst:hInst,up:hUp,bsd:hBsd+hAbsd,down:hDown,tenure:hTen,ltv:hLtv,cap:hc,kind:hKind};
+  const H0=Math.min(S,hPay, h.rentOn?mi(h.rentStart):S);
+  let bal=0, paid=0;
+  for(let t=H0;t<=E;t++){
+    let out=0;
+    if(h.rentOn&&t>=mi(h.rentStart)&&t<hKeys) out+=+h.rentAmt||0;
+    if(t===hPay){ out+=hUp; paid=hp; bal=hLoan; }
+    else if(t>hPay&&bal>0.005){ const it=bal*hRate/12; const inst=Math.min(hInst,bal+it); out+=inst; bal-=inst-it; }
+    if(t===hKeys) out+=+h.reno||0;
+    const val = t>=hPay? hp*Math.pow(1+(+h.apprec||0)/100,(t-hPay)/12):0;
+    hdb.out[t]=out; hdb.bal[t]=bal; hdb.eq[t]= t>=hPay? (paid-bal)+(val-hp):0;
+  }
+  const addEv=(o,t,s)=>{(o.ev[t]=o.ev[t]||[]).push(s)};
+  addEv(hdb,hPay,"HDB completion: downpayment, stamp duty, loan drawn");
+  addEv(hdb,hKeys,"HDB keys collected");
+  addEv(hdb,hKeys+Math.round((+h.mop||0)*12),"HDB MOP ends (can sell)");
+  if(h.rentOn) addEv(hdb,mi(h.rentStart),"HDB case: rent starts");
+
+  // ---- Condo
+  const c=st.c, cp=+c.price||0;
+  let cTen=Math.max(1,+c.tenure||1); const cc=ltvCap("private",cTen,age); cTen=Math.min(cTen,cc.maxT);
+  const cLtv=Math.min(+c.ltv||0,cc.cap)/100;
+  const cRate=(c.rateOv!==""&&c.rateOv!=null?+c.rateOv:rateBank(g))/100;
+  const cLoan=cp*cLtv, cBsd=bsd(cp), cAbsd=cp*(+c.absd||0)/100;
+  const stages=(c.stagesAuto||!c.stages)?autoStages(c):c.stages;
+  let cashNeed=cp*(1-cLtv); const cash={}, draw={}; const split=[];
+  stages.forEach(s=>{ const amt=cp*(+s.pct||0)/100; const cs=Math.min(amt,cashNeed); cashNeed-=cs; const ln=amt-cs; const t=mi(s.date);
+    cash[t]=(cash[t]||0)+cs; draw[t]=(draw[t]||0)+ln; split.push({...s,cash:cs,loan:ln}); });
+  const sp=mi(c.sp), top=mi(c.top);
+  const cUpFees=cBsd+cAbsd+(+c.legal||0);
+  const drawMonths=Object.keys(draw).map(Number).filter(t=>draw[t]>0).sort((a,b)=>a-b);
+  const first=drawMonths.length?drawMonths[0]:null;
+  const condo={out:{},eq:{},bal:{},ev:{},loan:cLoan,rate:cRate,bsd:cBsd+cAbsd,tenure:cTen,ltv:cLtv,cap:cc,split,stages,first};
+  const allT=[S,mi(c.otp),sp,...Object.keys(cash).map(Number)]; if(c.rentOn) allT.push(mi(c.rentStart));
+  const C0=Math.min(...allT);
+  let cb=0, cpaid=0, upTotal=0, lastInst=0; const instAt={};
+  for(let t=C0;t<=E;t++){
+    let out=0;
+    if(c.rentOn&&t>=mi(c.rentStart)&&t<top) out+=+c.rentAmt||0;
+    if(cash[t]){ out+=cash[t]; cpaid+=cash[t]; upTotal+=cash[t]; }
+    if(t===sp){ out+=cUpFees; upTotal+=cUpFees; }
+    if(cb>0.005 && first!=null){ const rem=Math.max(1,cTen*12-(t-first)+1); const it=cb*cRate/12; const inst=pmt(cRate/12,rem,cb); out+=inst; cb-=inst-it; lastInst=inst; instAt[t]=inst; }
+    if(draw[t]){ cb+=draw[t]; cpaid+=draw[t]; }
+    if(t===top) out+=+c.reno||0;
+    const val= t>=sp? cp*Math.pow(1+(+c.apprec||0)/100,(t-sp)/12):0;
+    condo.out[t]=out; condo.bal[t]=cb; condo.eq[t]= t>=Math.min(mi(c.otp),sp)? (cpaid-cb)+(t>=sp?val-cp:0):0;
+  }
+  condo.up=upTotal; condo.lastInst=lastInst;
+  const lastDraw=drawMonths.length?drawMonths[drawMonths.length-1]:top;
+  condo.fullInst=instAt[lastDraw+1]!=null?instAt[lastDraw+1]:pmt(cRate/12, first!=null?Math.max(1,cTen*12-(lastDraw-first)):cTen*12, cLoan);
+  split.forEach(s=>addEv(condo,mi(s.date),`Condo ${s.name} (${s.pct}%)`+(s.loan>0?(s.cash>0?" · you + bank":" · bank pays"):" · you pay")));
+  if(c.rentOn) addEv(condo,mi(c.rentStart),"Condo case: rent while building");
+  addEv(condo,top,"Condo keys (TOP)");
+
+  // ---- Exit (sell at E)
+  const exitOf=(price,start,g,fee,legal,bal,ssd)=>{ const yrs=Math.max(0,(E-start)/12); const value=E>=start?price*Math.pow(1+g/100,yrs):0;
+    const costs=value*fee/100+(value>0?legal:0); const ssdAmt=value*ssd; return {value,costs,ssd:ssdAmt,payoff:bal,cashBack:value-costs-ssdAmt-bal,yrs,growth:value/price-1}; };
+  const heldYrs=(E-sp)/12; const ssdRate= heldYrs<1?.16:heldYrs<2?.12:heldYrs<3?.08:heldYrs<4?.04:0;
+  hdb.exit=exitOf(hp,hPay,+h.apprec||0,+h.sellFee||0,+h.sellLegal||0,hdb.bal[E]||0,0);
+  condo.exit=exitOf(cp,sp,+c.apprec||0,+c.sellFee||0,+c.sellLegal||0,condo.bal[E]||0,ssdRate);
+  rent.exit={value:0,costs:0,ssd:0,payoff:0,cashBack:0,yrs:0,growth:0};
+  hdb.mopEnd=hKeys+Math.round((+h.mop||0)*12);
+
+  // ---- Aggregate in period
+  const res={months,S,E,df};
+  for(const [k,o] of [["rent",rent],["hdb",hdb],["condo",condo]]){
+    const eqBefore=o.eq[S-1]||0;
+    let cumOut=0,cumOutN=0,peak=0; const series={cumOut:[],equity:[],net:[],monthly:[]};
+    for(const t of months){ const v=o.out[t]||0; cumOut+=v*df(t); cumOutN+=v; peak=Math.max(peak,v);
+      const eqT=(o.eq[t]||0)*df(t);
+      series.cumOut.push(cumOut); series.equity.push(eqT); series.net.push(cumOut-(eqT-eqBefore)); series.monthly.push(v*df(t)); }
+    const eqEnd=(o.eq[E]||0);
+    const cb=o.exit.cashBack;
+    if(k!=="rent") series.net[series.net.length-1]=cumOut-cb*df(E)+eqBefore;
+    const cfs=months.map(t=>-(o.out[t]||0)); cfs[cfs.length-1]+=cb;
+    const npv=cfs.reduce((a,v,i)=>a+v*Math.pow(1+disc,-i/12),0);
+    o.irr=k==="rent"?null:irr(cfs);
+    o.result={cashBack:cb, gainNominal:cb-cumOutN, gain:cb*df(E)-cumOut, npv, paidNominal:cumOutN};
+    o.sum={outflow:cumOut, outflowNominal:cumOutN, equityEnd:eqEnd*df(E), equityEndNominal:eqEnd, equityGain:eqEnd*df(E)-eqBefore, net:cumOut-(eqEnd*df(E)-eqBefore), owed:o.bal[E]||0, peak, avg:cumOutN/months.length, endMonthly:o.out[E]||0};
+    o.series=series; res[k]=o;
+  }
+  res.bankRate=rateBank(g);
+  return res;
+}
+function irr(cfs){ const f=r=>cfs.reduce((a,v,i)=>a+v/Math.pow(1+r,i),0);
+  let lo=-0.05, hi=0.08, flo=f(lo), fhi=f(hi); if(!isFinite(flo)||!isFinite(fhi)||flo*fhi>0) return null;
+  for(let k=0;k<200;k++){ const m=(lo+hi)/2, fm=f(m); if(flo*fm<=0){hi=m;fhi=fm;} else {lo=m;flo=fm;} }
+  return Math.pow(1+(lo+hi)/2,12)-1; }
+function fmt(n){ return Math.round(n).toLocaleString("en-SG"); }
+/* ================= END ENGINE ================= */
+
+const DEFAULTS={
+  g:{start:"2026-10",end:"2032-08",sora:1.23,spread:0.30,tvm:false,disc:2.5,age:30,income:""},
+  r:{amt:2000,start:"2027-08",stepOn:true,stepDate:"2030-01",amt2:4500,endOn:false,end:"2035-01"},
+  h:{price:900000,pay:"2027-01",keys:"2027-08",loanType:"hdb",hdbRate:2.6,rateOv:"",tenure:25,ltv:75,mop:5,legal:3000,absd:"0",reno:0,apprec:2,sellFee:1,sellLegal:2500,rentOn:false,rentAmt:2000,rentStart:"2027-01"},
+  c:{price:1980000,otp:"2026-10",sp:"2026-10",top:"2029-04",csc:12,laid:true,rateOv:"",tenure:30,ltv:75,absd:"0",legal:3000,reno:0,apprec:2.5,sellFee:1,sellLegal:3000,rentOn:true,rentAmt:2500,rentStart:"2027-07",stagesAuto:true,stages:null}
+};
+const SORA_NOW=1.23;
+const KEY="housing-case-v2";
+let st;
+try{ st=JSON.parse(localStorage.getItem(KEY)); }catch(e){ st=null; }
+if(!st||!st.g||!st.c) st=structuredClone(DEFAULTS);
+for(const k of Object.keys(DEFAULTS)) st[k]={...DEFAULTS[k],...st[k]};
+const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} };
+const get=p=>{const [a,b]=p.split(".");return st[a][b]};
+const set=(p,v)=>{const [a,b]=p.split(".");st[a][b]=v};
+const $=id=>document.getElementById(id);
+
+/* ---------- month pickers ---------- */
+function buildMonth(el){
+  const p=el.dataset.month; el.innerHTML="";
+  const sm=document.createElement("select"), sy=document.createElement("select");
+  sm.id=p+".m"; sy.id=p+".y"; sm.setAttribute("aria-label","Month"); sy.setAttribute("aria-label","Year");
+  MN.forEach((n,i)=>sm.add(new Option(n,i+1)));
+  for(let y=2024;y<=2066;y++) sy.add(new Option(y,y));
+  el.append(sm,sy);
+  const ch=()=>{ set(p,`${sy.value}-${String(sm.value).padStart(2,"0")}`); onChange(p); };
+  sm.addEventListener("change",ch); sy.addEventListener("change",ch);
+}
+function syncMonth(el){ const v=get(el.dataset.month); if(!v) return; const [y,m]=v.split("-"); $(el.dataset.month+".m").value=+m; $(el.dataset.month+".y").value=+y; }
+document.querySelectorAll("[data-month]").forEach(buildMonth);
+
+/* ---------- plain inputs ---------- */
+const FIELDS=["g.sora","g.spread","g.tvm","g.disc","g.age","g.income","r.amt","r.stepOn","r.amt2","r.endOn","h.price","h.loanType","h.hdbRate","h.rateOv","h.tenure","h.ltv","h.mop","h.legal","h.absd","h.reno","h.apprec","h.rentOn","h.rentAmt","c.price","c.rateOv","c.tenure","c.ltv","c.csc","c.laid","c.absd","c.legal","c.reno","c.apprec","c.rentOn","h.sellFee","h.sellLegal","c.sellFee","c.sellLegal","c.rentAmt"];
+FIELDS.forEach(p=>{ const el=$(p); if(!el) return;
+  const ev=(el.type==="range"||el.type==="number"||el.type==="text")?"input":"change";
+  el.addEventListener(ev,()=>{ let v= el.type==="checkbox"?el.checked : el.value;
+    if(el.type==="number"||el.type==="range"){ v = el.value===""?"":+el.value; }
+    set(p,v); onChange(p); });
+});
+function syncInputs(){
+  FIELDS.forEach(p=>{const el=$(p); if(!el) return; const v=get(p); if(el.type==="checkbox") el.checked=!!v; else el.value=v??"";});
+  document.querySelectorAll("[data-month]").forEach(syncMonth);
+}
+
+/* ---------- SORA picker ---------- */
+const SORA_OPTS=[[0.75,"Low"],[SORA_NOW,"Now"],[1.75,""],[2.25,""],[3.0,"2023-like"],[3.75,"Peak"]];
+function buildSora(){
+  const box=$("soraPick"); box.innerHTML="";
+  SORA_OPTS.forEach(([v,l])=>{ const b=document.createElement("button"); b.type="button";
+    b.innerHTML=`<span class="num">${v.toFixed(2)}%</span><small>${v===SORA_NOW?"Current":l||"&nbsp;"}</small>`;
+    if(v===SORA_NOW) b.classList.add("cur");
+    if(Math.abs((+st.g.sora)-v)<1e-9) b.classList.add("sel");
+    b.setAttribute("aria-pressed",Math.abs((+st.g.sora)-v)<1e-9);
+    b.addEventListener("click",()=>{ st.g.sora=v; $("g.sora").value=v; onChange("g.sora"); });
+    box.append(b); });
+}
+
+/* ---------- presets ---------- */
+const mopEnd=()=>mi(st.h.keys)+Math.round((+st.h.mop||0)*12);
+document.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click",()=>{
+  st.g.end=ms(mopEnd()+(+b.dataset.preset)*12); syncInputs(); onChange("g.end"); }));
+document.querySelectorAll("[data-gp]").forEach(b=>b.addEventListener("click",()=>{
+  const [a,c]=b.dataset.gp.split(",").map(Number); st.h.apprec=a; st.c.apprec=c; syncInputs(); onChange("growth"); }));
+$("resetBtn").addEventListener("click",()=>{ st=structuredClone(DEFAULTS); syncInputs(); onChange("reset"); });
+
+/* ---------- stages table ---------- */
+function renderStages(sim){
+  const body=$("stageBody"); const stages=sim.condo.split;
+  $("stageMode").textContent=st.c.stagesAuto?"Auto-estimated":"Edited by you";
+  $("reEst").hidden=!!st.c.stagesAuto;
+  body.innerHTML="";
+  stages.forEach((s,k)=>{
+    const tr=document.createElement("tr");
+    const who = s.loan<=0?'<span class="tag cash">You</span>': s.cash>0?'<span class="tag cash">You + bank</span>':'<span class="tag">Bank</span>';
+    tr.innerHTML=`<td>${s.name}</td><td><div class="mp"><select aria-label="${s.name} month" data-sk="${k}" data-sf="m"></select><select aria-label="${s.name} year" data-sk="${k}" data-sf="y"></select></div></td><td class="n"><input type="number" min="0" max="100" step="1" value="${s.pct}" data-sk="${k}" data-sf="pct" aria-label="${s.name} percent" style="width:58px;text-align:right"></td><td class="n">${who}</td>`;
+    body.append(tr);
+    const [y,m]=s.date.split("-").map(Number);
+    const sm=tr.querySelector('[data-sf="m"]'), sy=tr.querySelector('[data-sf="y"]');
+    MN.forEach((n,i)=>sm.add(new Option(n,i+1))); for(let yy=2024;yy<=2040;yy++) sy.add(new Option(yy,yy));
+    sm.value=m; sy.value=y;
+  });
+  body.querySelectorAll("[data-sk]").forEach(el=>el.addEventListener("change",()=>{
+    const cur=sim.condo.split.map(s=>({name:s.name,pct:s.pct,date:s.date}));
+    const k=+el.dataset.sk, row=el.closest("tr");
+    if(el.dataset.sf==="pct") cur[k].pct=+el.value||0;
+    else { const m=row.querySelector('[data-sf="m"]').value, y=row.querySelector('[data-sf="y"]').value; cur[k].date=`${y}-${String(m).padStart(2,"0")}`; }
+    st.c.stages=cur; st.c.stagesAuto=false; onChange("stages");
+  }));
+  const tot=stages.reduce((a,s)=>a+(+s.pct||0),0); const n=$("stageNote");
+  n.hidden=Math.abs(tot-100)<0.01; n.className="note bad"; n.textContent=`Milestones add up to ${tot}%. They should total 100%.`;
+}
+$("reEst").addEventListener("click",()=>{ st.c.stagesAuto=true; st.c.stages=null; onChange("stages"); });
+
+/* ---------- visibility ---------- */
+function syncVisibility(){
+  document.querySelectorAll("[data-show]").forEach(el=>el.hidden=!get(el.dataset.show));
+  document.querySelectorAll("[data-show-val]").forEach(el=>{const [p,v]=el.dataset.showVal.split("=");el.hidden=get(p)!==v;});
+  $("discWrap").hidden=!st.g.tvm;
+}
+
+/* ---------- chart ---------- */
+let chart=null, tab="net";
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const money=n=>(n<0?"−$":"$")+fmt(Math.abs(n));
+const kfmt=n=>{const a=Math.abs(n);const s=a>=1e6?(a/1e6).toFixed(2).replace(/\.?0+$/,"")+"M":a>=1e3?Math.round(a/1e3)+"K":Math.round(a)+"";return (n<0?"−$":"$")+s;};
+const CAPS={net:"Total paid out minus what you own (home value minus loan), month by month. The last point is after selling. Lower is better; below zero is a profit.",equity:"Value of the share of the home you own (price paid in plus principal repaid, plus any price growth).",cum:"Every dollar paid out so far: rent, downpayments, stamp duty, fees and instalments.",monthly:"Cash leaving your pocket each month. Spikes are downpayments and stamp duty."};
+function drawChart(sim){
+  const labels=sim.months.map(mlab);
+  const key={net:"net",equity:"equity",cum:"cumOut",monthly:"monthly"}[tab];
+  const names={rent:"Rent",hdb:"Resale HDB",condo:"Condo"};
+  const ds=["rent","hdb","condo"].map(k=>({label:names[k],data:sim[k].series[key],borderColor:css("--"+k),backgroundColor:css("--"+k),borderWidth:2,pointRadius:0,pointHoverRadius:5,pointHoverBorderWidth:2,pointHoverBorderColor:css("--surface"),tension:0,stepped:tab==="monthly"?"before":false}));
+  $("chartCap").textContent=CAPS[tab]+(st.g.tvm?` Discounted at ${st.g.disc}% a year to ${mlab(sim.S)}.`:"");
+  const ink=css("--muted"), grid=css("--line");
+  const opts={responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},
+    plugins:{legend:{display:true,position:"top",align:"end",labels:{color:ink,boxWidth:10,boxHeight:10,useBorderRadius:true,borderRadius:2,font:{family:"IBM Plex Sans",size:12}}},
+      tooltip:{backgroundColor:css("--surface"),titleColor:css("--ink"),bodyColor:css("--ink"),borderColor:grid,borderWidth:1,padding:10,boxPadding:4,usePointStyle:true,
+        titleFont:{family:"IBM Plex Sans",weight:"600"},bodyFont:{family:"IBM Plex Mono",size:12},
+        callbacks:{label:c=>` ${c.dataset.label}: ${money(c.parsed.y)}`}}},
+    scales:{x:{ticks:{color:ink,maxRotation:0,autoSkip:true,maxTicksLimit:9,font:{family:"IBM Plex Mono",size:11}},grid:{display:false},border:{color:grid}},
+      y:{beginAtZero:true,ticks:{color:ink,callback:v=>kfmt(v),font:{family:"IBM Plex Mono",size:11}},grid:{color:grid},border:{display:false}}}};
+  if(typeof Chart==="undefined"){ $("chartCap").textContent="The chart library couldn't load. The month-by-month table below has the same numbers."; return; }
+  if(chart){ chart.data.labels=labels; chart.data.datasets=ds; chart.options=opts; chart.update(); }
+  else chart=new Chart($("chart"),{type:"line",data:{labels,datasets:ds},options:opts});
+}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]"); if(!b) return; tab=b.dataset.tab;
+  $("tabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected",x===b)); drawChart(lastSim); });
+
+/* ---------- cards & verdict ---------- */
+const pct=(x,d=1)=>x==null?"–":(x*100).toFixed(d)+"%";
+function renderCards(sim){
+  const names={rent:"Rent",hdb:"Resale HDB",condo:"Condo"};
+  const tvm=st.g.tvm, val=k=>tvm?sim[k].result.npv:sim[k].result.gainNominal;
+  const order=["rent","hdb","condo"].sort((a,b)=>val(b)-val(a));
+  const best=order[0];
+  const word=v=>v>=0?"gain":"loss";
+  $("vEyebrow").textContent=`Start ${mlab(sim.S)} → sell ${mlab(sim.E)} · ${(sim.months.length/12).toFixed(1)} years${tvm?` · today's dollars at ${st.g.disc}%`:""}`;
+  $("vHead").textContent= val(best)>=0 ? `${names[best]} leaves you best off: ${money(val(best))} net gain at exit` : `${names[best]} costs you the least: ${money(-val(best))} net loss at exit`;
+  $("vSub").textContent=`Next is ${names[order[1]]} at ${money(val(order[1]))}, then ${names[order[2]]} at ${money(val(order[2]))}. Net = cash back from the sale minus everything you paid in${tvm?", discounted":""}.`;
+  const inc=+st.g.income||0;
+  const box=$("cards"); box.innerHTML="";
+  ["rent","hdb","condo"].forEach(k=>{
+    const o=sim[k], s=o.sum, R=o.result, X=o.exit, v=val(k);
+    let rows="";
+    if(k==="rent"){
+      rows=`<dt>Total rent paid</dt><dd>${money(R.paidNominal)}</dd><dt>Rent at exit</dt><dd>${money(s.endMonthly)}/mo</dd><dt>Average per month</dt><dd>${money(s.avg)}</dd><div class="sep"></div><dt>Cash back at exit</dt><dd>$0</dd>`;
+    } else {
+      const loanLbl=k==="hdb"?(o.kind==="hdbloan"?"HDB loan":"Bank loan"):"Bank loan";
+      const inst=k==="hdb"?o.inst:o.fullInst;
+      rows=`<dt>Total paid in</dt><dd>${money(R.paidNominal)}</dd><dt>${loanLbl}</dt><dd>${money(o.loan)} @ ${(o.rate*100).toFixed(2)}%</dd><dt>${k==="hdb"?"Monthly instalment":"Instalment after CSC"}</dt><dd>${money(inst)}</dd>
+        <div class="sep"></div><dt>Sale price at exit</dt><dd>${money(X.value)}</dd><dt>Less loan payoff</dt><dd>${money(-X.payoff)}</dd><dt>Less selling costs${X.ssd>0?" & SSD":""}</dt><dd>${money(-(X.costs+X.ssd))}</dd><dt><b>Cash back at exit</b></dt><dd><b>${money(X.cashBack)}</b></dd>
+        <div class="sep"></div><dt>Price growth</dt><dd>${pct(X.growth)} total</dd><dt>Return on your cash</dt><dd>${pct(o.irr)} a year</dd>`;
+    }
+    let aff="";
+    if(inc>0&&k!=="rent"){
+      const pills=[];
+      if(k==="hdb"){ const msr=o.inst/inc; pills.push(`<span class="pill ${msr<=.30?"ok":"bad"}">MSR ${(msr*100).toFixed(0)}% ${msr<=.30?"≤":">"} 30%</span>`);
+        if(o.kind!=="hdbloan"){ const td=pmt(Math.max(.04,o.rate)/12,o.tenure*12,o.loan)/inc; pills.push(`<span class="pill ${td<=.55?"ok":"bad"}">TDSR ${(td*100).toFixed(0)}% at 4%</span>`);} }
+      else { const td=pmt(Math.max(.04,o.rate)/12,o.tenure*12,o.loan)/inc; pills.push(`<span class="pill ${td<=.55?"ok":"bad"}">TDSR ${(td*100).toFixed(0)}% ${td<=.55?"≤":">"} 55% at 4%</span>`); }
+      aff=`<div class="afford">${pills.join("")}</div>`;
+    }
+    const lev = (k!=="rent"&&o.irr!=null&&X.yrs>0) ? (()=>{ const g=Math.pow(1+X.growth,1/X.yrs)-1; return `<p class="lev">Price grows ${pct(g)} a year; with the loan, your cash earns ${pct(o.irr)} a year.</p>`;})() : "";
+    const el=document.createElement("article"); el.className="card"; el.style.setProperty("--c",`var(--${k})`);
+    el.innerHTML=`<div class="ch"><h3><span class="swatch"></span>${names[k]}</h3>${k===best?'<span class="badge">Best at exit</span>':`<span class="tag">${kfmt(v-val(best))} vs best</span>`}</div>
+      <div><div class="eyebrow">Net ${word(v)} at exit${tvm?" (today's $)":""}</div><div class="big" style="color:${v>=0?"var(--good)":"var(--ink)"}">${v>=0?"+":""}${money(v)}</div></div>
+      ${lev}<dl class="kv">${rows}</dl>${aff}`;
+    box.append(el);
+  });
+}
+
+/* ---------- derived boxes & caps ---------- */
+function renderDerived(sim){
+  const h=sim.hdb, c=sim.condo;
+  $("hdbLoanTag").textContent=h.kind==="hdbloan"?"HDB loan":"Bank loan";
+  $("h.ltvLab").textContent=Math.round(h.ltv*100)+"%";
+  $("c.ltvLab").textContent=Math.round(c.ltv*100)+"%";
+  $("h.capHint").textContent=`Max ${h.cap.cap}% for this tenure. Min. cash downpayment applies for bank loans.`;
+  $("c.capHint").textContent=`Max ${c.cap.cap}% for this tenure. At least 5% of the price must be cash.`;
+  const capNote=(id,o,inp,tenIn)=>{ const n=$(id); const msgs=[];
+    if(inp>o.cap.cap) msgs.push(`Loan capped at ${o.cap.cap}% because the ${o.cap.why}.`);
+    if(tenIn>o.cap.maxT) msgs.push(`Tenure capped at ${o.cap.maxT} years.`);
+    n.hidden=!msgs.length; n.className="note warn"; n.textContent=msgs.join(" "); };
+  capNote("h.capNote",h,+st.h.ltv,+st.h.tenure); capNote("c.capNote",c,+st.c.ltv,+st.c.tenure);
+  $("h.derived").innerHTML=`<span>Downpayment (equity)</span><span class="num">${money(h.down)}</span><span>Stamp duty</span><span class="num">${money(h.bsd)}</span><span>Total at completion</span><span class="num"><b>${money(h.up)}</b></span><span>Loan · monthly</span><span class="num">${money(h.loan)} · ${money(h.inst)}</span><span>Earliest sale (MOP)</span><span class="num">${mlab(mi(st.h.keys)+Math.round((+st.h.mop||0)*12))}</span>`;
+  const own=(+st.c.price||0)*(1-c.ltv);
+  $("c.derived").innerHTML=`<span>Your share (equity)</span><span class="num">${money(own)}</span><span>Stamp duty</span><span class="num">${money(c.bsd)}</span><span>Total upfront incl. fees</span><span class="num"><b>${money(c.up)}</b></span><span>Loan · after CSC</span><span class="num">${money(c.loan)} · ${money(c.fullInst)}</span><span>Bank starts paying</span><span class="num">${c.first!=null?mlab(c.first):"–"}</span>`;
+  const hx=h.exit, cx=c.exit;
+  $("exitDerived").innerHTML=`<span>HDB sale price at exit</span><span class="num">${money(hx.value)}</span><span>Condo sale price at exit</span><span class="num">${money(cx.value)}</span><span>Condo seller's stamp duty</span><span class="num">${cx.ssd>0?money(cx.ssd):"None (held 4+ yrs)"}</span><span>Earliest HDB exit (MOP)</span><span class="num">${mlab(h.mopEnd)}</span>`;
+  $("d.bank").textContent=sim.bankRate.toFixed(2)+"% p.a.";
+}
+
+/* ---------- timeline ---------- */
+function renderTimeline(sim){
+  const S=sim.S,E=sim.E,span=Math.max(1,E-S+1); const pos=t=>Math.max(0,Math.min(100,(t-S)/span*100));
+  const box=$("timeline"); box.innerHTML="";
+  const rows=[["Rent","rent",[[mi(st.r.start),st.r.endOn?mi(st.r.end)+1:E+1,"rent"]],[[mi(st.r.start),"Rent starts"]].concat(st.r.stepOn?[[mi(st.r.stepDate),"Rent rises"]]:[])],
+    ["Resale HDB","hdb",[...(st.h.rentOn?[[mi(st.h.rentStart),mi(st.h.keys),"rent"]]:[]),[mi(st.h.pay),mi(st.h.pay)+sim.hdb.tenure*12,"loan"]],[[mi(st.h.pay),"Completion"],[mi(st.h.keys),"Keys"],[mi(st.h.keys)+Math.round((+st.h.mop||0)*12),"MOP ends"]]],
+    ["Condo","condo",[...(st.c.rentOn?[[mi(st.c.rentStart),mi(st.c.top),"rent"]]:[]),...(sim.condo.first!=null?[[sim.condo.first,E+1,"loan"]]:[])],[[mi(st.c.otp),"OTP"],[mi(st.c.top),"TOP"],[mi(st.c.top)+(+st.c.csc||0),"CSC"]]]];
+  rows.forEach(([nm,k,segs,evs])=>{
+    const row=document.createElement("div"); row.className="tl-row";
+    let html=`<div class="nm"><span class="swatch" style="--c:var(--${k})"></span>${nm}</div><div class="track">`;
+    segs.forEach(([a,b,type])=>{ if(b<S||a>E) return; const l=pos(a), w=Math.max(.5,pos(Math.min(b,E+1))-l); html+=`<div class="seg" style="left:${l}%;width:${w}%;background:${type==="rent"?"var(--faint)":`var(--${k})`}" title="${type==="rent"?"Renting":"Loan"}"></div>`; });
+    evs.filter(([t])=>t>=S&&t<=E).sort((a,b)=>a[0]-b[0]).forEach(([t,l],i)=>{ html+=`<div class="ev ${i%2?"lo":""}" style="left:${pos(t)}%"><b>${l} · ${MN[t%12]} ’${String(Math.floor(t/12)).slice(2)}</b></div>`; });
+    row.innerHTML=html+"</div>"; box.append(row);
+  });
+  const ax=document.createElement("div"); ax.className="axis";
+  for(let y=Math.ceil(S/12);y*12<=E;y++){ const t=y*12; ax.innerHTML+=`<span style="left:${pos(t)}%">${y}</span>`; }
+  box.append(ax);
+}
+
+/* ---------- monthly table ---------- */
+let csvText="";
+function renderTable(sim){
+  const only=$("onlyEvents").checked;
+  const head=["Month","Rent: paid","HDB: paid","HDB: to equity","Condo: paid","Condo: to equity","What happens"];
+  const lines=[head]; let html=`<thead><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`;
+  const tot=[0,0,0,0,0];
+  sim.months.forEach((t,i)=>{
+    const df=sim.df(t);
+    const eqd=o=>((o.eq[t]||0)-(o.eq[t-1]||0))*df;
+    const v=[(sim.rent.out[t]||0)*df,(sim.hdb.out[t]||0)*df,eqd(sim.hdb),(sim.condo.out[t]||0)*df,eqd(sim.condo)];
+    v.forEach((x,j)=>tot[j]+=x);
+    const ev=[...(sim.rent.ev[t]||[]),...(sim.hdb.ev[t]||[]),...(sim.condo.ev[t]||[])];
+    lines.push([mlab(t),...v.map(x=>Math.round(x)),ev.join("; ")]);
+    if(only&&!ev.length) return;
+    html+=`<tr class="${ev.length?"mark":""}"><td>${mlab(t)}</td>${v.map(x=>`<td>${x?money(x):"–"}</td>`).join("")}<td class="ev">${ev.join("<br>")}</td></tr>`;
+  });
+  html+=`<tr class="tot"><td>Total</td>${tot.map(x=>`<td>${money(x)}</td>`).join("")}<td class="ev">${st.g.tvm?"Discounted to "+mlab(sim.S):"Nominal dollars"}</td></tr></tbody>`;
+  lines.push(["Total",...tot.map(x=>Math.round(x)),""]);
+  $("mtable").innerHTML=html;
+  csvText=lines.map(r=>r.map(c=>typeof c==="string"&&/[,;"]/.test(c)?`"${c.replace(/"/g,'""')}"`:c).join(",")).join("\n");
+}
+$("onlyEvents").addEventListener("change",()=>renderTable(lastSim));
+$("copyCsv").addEventListener("click",async e=>{
+  const b=e.currentTarget;
+  try{ await navigator.clipboard.writeText(csvText); b.textContent="Copied"; }
+  catch(err){ const ta=$("csvFallback"); ta.value=csvText; ta.classList.remove("sr"); ta.style.cssText="width:100%;height:120px;margin-top:8px"; ta.select(); b.textContent="Select all & copy"; }
+  setTimeout(()=>b.textContent="Copy as CSV",2000);
+});
+
+/* ---------- main loop ---------- */
+let lastSim=null, raf=0;
+let p_last="";
+function onChange(p){ p_last=p; if(p==="g.end") $("exitNote").hidden=true;
+  if(["c.otp","c.sp","c.top","c.csc","c.laid"].includes(p) && st.c.stagesAuto) st.c.stages=null;
+  if(p==="c.otp"&&st.c.stagesAuto){ /* keep S&P on/after OTP */ if(mi(st.c.sp)<mi(st.c.otp)){ st.c.sp=st.c.otp; syncMonth(document.querySelector('[data-month="c.sp"]')); } }
+  if(p==="h.loanType"){ const mx=st.h.loanType==="hdb"?25:30; if(+st.h.tenure>mx){ st.h.tenure=mx; $("h.tenure").value=mx; } }
+  save(); cancelAnimationFrame(raf); raf=requestAnimationFrame(render);
+}
+function render(){
+  const n=$("exitNote"), me=mopEnd();
+  if(mi(st.g.end)<me){ st.g.end=ms(me); syncMonth(document.querySelector('[data-month="g.end"]')); save();
+    n.hidden=false; n.textContent=`Exit moved to ${mlab(me)}. A resale HDB flat can't be sold until its ${st.h.mop}-year MOP ends.`; }
+  syncVisibility(); buildSora();
+  const sim=simulate(st); lastSim=sim;
+  renderDerived(sim); renderStages(sim); renderCards(sim); drawChart(sim); renderTimeline(sim); renderTable(sim);
+}
+syncInputs(); render();
+const mq=window.matchMedia("(prefers-color-scheme: dark)");
+const redraw=()=>{ if(chart){ chart.destroy(); chart=null; } if(lastSim) drawChart(lastSim); };
+mq.addEventListener?.("change",redraw);
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+</script>
+</body>
+</html>

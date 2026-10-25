@@ -1,0 +1,133 @@
+# Methods
+
+How the dashboard compares renting, a resale HDB flat and a new-launch condo. Last updated 26 Oct 2026.
+
+## The deciding metric
+
+**Net gain at exit** = cash back from the sale − everything paid in.
+
+With *time value of money* switched on, it is the NPV of the monthly flows (outflows each month, sale proceeds in the exit month) discounted to the start month at the discount rate.
+
+## Period
+
+- The comparison runs from the start month to the exit (sale) month.
+- The exit can never be earlier than the end of the HDB MOP (keys + MOP), so all three cases cover the same period. If you pick an earlier exit, the page moves it and says so.
+
+## Default scenario
+
+**Period**
+- Start Oct 2026. Exit Aug 2032 = HDB key collection + 5-year MOP.
+
+**Rates**
+- 3M compounded SORA 1.23% (5 Oct 2026), plus a 0.30% bank spread = 1.53% bank rate.
+- HDB concessionary loan 2.6% (CPF OA 2.5% + 0.1%).
+- Discount rate for time value of money: 2.5% (the CPF OA rate).
+
+**Rent**
+- $2,000/mo from Aug 2027, rising to $4,500/mo from Jan 2030.
+
+**Resale HDB**
+- Price $900,000. Completion/payment Jan 2027. Keys Aug 2027. MOP 5 years.
+- HDB loan at 75% LTV over 25 years: about $3,062/mo.
+- Upfront at completion $249,600: $225K downpayment + $21.6K BSD + $3K legal.
+- No rent before key collection.
+
+**Condo**
+- Price $1,980,000. OTP and S&P Oct 2026, foundation already laid. TOP Apr 2029. CSC 12 months after TOP.
+- Bank loan at 75% over 30 years.
+- Upfront about $566.6K: $495K equity + $68.6K BSD + $3K legal.
+- Rent of $2,500/mo from Jul 2027 until TOP.
+- Instalment after CSC about $5,470/mo.
+
+**Growth and exit**
+- HDB 2.0% a year, condo 2.5% a year (the "Base" preset; placeholders, not forecasts).
+- Agent fee 1% on each sale. Legal on sale $2,500 (HDB), $3,000 (condo).
+
+### Results with the defaults (nominal)
+
+| Case | Total paid in | Cash back at exit | Net |
+|---|---|---|---|
+| Rent | $202,000 | $0 | −$202,000 |
+| Resale HDB | $454,772 | $432,886 | −$21,886 |
+| Condo | $856,981 | $935,415 | **+$78,435** |
+
+- Return on cash: HDB −1.1% a year, condo +1.9% a year.
+- With 0% growth: HDB −$126K, condo −$225K.
+- With time value of money at 2.5%: rent −$184K, HDB −$64K, condo −$23K.
+
+`tools/check.mjs` re-runs the engine on these defaults on every deploy and fails if the nominal figures drift by more than $50.
+
+## Calculation rules
+
+### Stamp duty
+- **BSD (IRAS residential tiers):** 1% on the first $180K, 2% on the next $180K, 3% on the next $640K, 4% on the next $500K, 5% on the next $1.5M, 6% above that.
+- **ABSD:** a selectable % (0 for a first home).
+- **SSD (condo):** 16% / 12% / 8% / 4% of the sale price if sold within 1 / 2 / 3 / 4 years of S&P.
+
+### Loan limits (MAS)
+- HDB loan: max 75% LTV and max 25-year tenure.
+- Bank loan on an HDB flat: 75% if the tenure is 25 years or less, otherwise 55%. Max 30 years.
+- Private property: 75% if the tenure is 30 years or less, otherwise 55%. Max 35 years.
+- Any loan running past age 65 is capped at 55%.
+- Bank loans need at least 5% cash.
+
+### Resale HDB cash flows
+- At completion: downpayment + BSD + ABSD + legal; the loan is drawn.
+- Instalments from the month after completion, at a fixed rate.
+- Renovation (optional) is paid at key collection and builds no equity.
+- Optional rent runs from its start month until the month before key collection.
+
+### Condo progressive payments
+
+| Stage | % of price |
+|---|---|
+| OTP | 5% |
+| S&P | 15% |
+| Foundation | 10% |
+| Reinforced concrete | 10% |
+| Brick walls | 5% |
+| Ceiling/roofing | 5% |
+| Wiring/plumbing | 5% |
+| Roads/carparks/drains | 5% |
+| TOP | 25% |
+| CSC | 15% |
+
+- The buyer pays the stages in order until their share (100% − LTV) is covered; after that the bank pays.
+- Instalments start the month after each disbursement and are recalculated over the remaining tenure, counted from the first disbursement.
+- Auto-estimated stage dates are spread between S&P and TOP at 15% (foundation, if not yet laid), 40% (reinforced concrete), 60% (brick walls), 73% (ceiling/roofing), 83% (wiring/plumbing) and 93% (roads/carparks/drains) of the build period. Any date or % can be edited by hand.
+- BSD, ABSD and legal fees are paid at S&P. Renovation is paid at TOP.
+- Optional rent runs from its start month until TOP.
+
+### Equity
+- Equity = paid towards the price + principal repaid + price growth. Rent builds no equity.
+- "Money not coming back" = total paid out − equity gained: rent, interest, stamp duty, fees and renovation.
+
+### Exit
+- Cash back = sale value − loan outstanding − agent fee − sale legal fees − SSD.
+- Growth compounds from HDB completion and from the condo's S&P date.
+- CPF refunds on sale (principal plus accrued interest) are treated as the buyer's own money, so they count as cash back.
+
+### Return on cash
+- The annualised IRR of the monthly flows, with the sale proceeds in the exit month.
+
+### Affordability checks (optional, need household income)
+- MSR: HDB-flat instalment up to 30% of gross monthly income.
+- TDSR: total debt up to 55% of income, tested at a 4% stress rate.
+
+### Simplifications
+- Interest rates are held flat for the whole period. Bank packages usually reprice after 2–3 years; use the SORA picker to test higher levels.
+- No maintenance fees, property tax or insurance.
+- CPF OA usage and accrued interest are not tracked separately.
+
+## Open ideas
+- Let the bank rate reprice after a lock-in period instead of staying flat.
+- Add CPF OA usage and accrued-interest refund tracking.
+- Optionally model renting while investing the cash saved.
+
+## Sources
+- HDB concessionary rate 2.6%, pegged to CPF OA + 0.1%: HDB / CPF Board quarterly releases, 2026.
+- 3M SORA 1.23% on 5 Oct 2026: https://propoagroup.co/market/sora
+- 2026 bank package range of about 1.3–1.8%: https://www.homejourney.sg/blog/bank-home-loan-rate-comparison-2026-homejourney-safe-guide
+- HDB loan downpayment 25%: https://blog.moneysmart.sg/home-loans/hdb-loans-singapore-ultimate-guide-cost/
+
+Rough guide only, not financial advice.

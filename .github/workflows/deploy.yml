@@ -1,16 +1,18 @@
 name: Deploy dashboard
 
 on:
+  schedule:
+    - cron: "43 19 * * 1"     # every Monday at 03:43 Singapore time (19:43 UTC Sunday): refresh growth defaults
   push:
     branches: [main]
-    paths:
-      - "site/**"
-      - "tools/**"
-      - ".github/workflows/deploy.yml"
-  workflow_dispatch:         # "Run workflow" button on the Actions tab
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+      - "reference/**"
+  workflow_dispatch:           # "Run workflow" button on the Actions tab
 
 permissions:
-  contents: read
+  contents: write   # to commit data/growth.json when the growth defaults change
   pages: write
   id-token: write
 
@@ -21,16 +23,37 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Validate page JavaScript and default results
+      # Growth defaults from hdb-resale-dashboard (q/sg.json) and private-condo-analysis
+      # (raw-data branch archive). If a source can't be reached, the last committed value is kept.
+      - name: Refresh growth defaults
+        run: python tools/growth.py
+
+      - name: Validate page JavaScript and example results
         run: node tools/check.mjs
+
+      - name: Assemble site
+        run: |
+          cp data/growth.json site/growth.json
+          python -c "import json; json.load(open('site/growth.json'))"
+
+      - name: Record growth defaults (commit only if they changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/growth.json
+          git diff --cached --quiet || (git commit -m "Growth defaults: $(python -c 'import json;g=json.load(open("data/growth.json"));print(" · ".join(f"{k} {g[k]["rate"]*100:.1f}%" for k in ("hdb","condoResale","condoNew")))')" && git pull --rebase -q && git push)
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

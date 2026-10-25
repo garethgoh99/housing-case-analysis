@@ -1,0 +1,44 @@
+{
+ "hdb": {
+  "rate": 0.05358813227933017,
+  "yoy": [
+   0.008441961514587204,
+   0.08135320177204997,
+   0.06383890317052265,
+   0.08189122373300362,
+   0.12108089381604037
+  ],
+  "to": "2026Q3",
+  "basis": "HDB Resale Price Index, 4 quarters vs the 4 before (seed value; replaced by hdb-resale-dashboard's median $psf on the first workflow run)"
+ },
+ "condoResale": {
+  "rate": 0.05053626330252159,
+  "yoy": [
+   0.03496936147538565,
+   0.05147086435684467,
+   0.07338079150579135,
+   0.07620057567035299
+  ],
+  "to": "2026-09",
+  "basis": "RCR condo resales, median $psf, 12 months vs the 12 before (private-condo-analysis)"
+ },
+ "condoNew": {
+  "rate": 0.04522077007268055,
+  "yoy": [
+   0.02380607692307679,
+   0.04916067146282965,
+   0.06665913101360821,
+   0.08887224778433134
+  ],
+  "to": "2026-09",
+  "basis": "RCR condo resales + sub-sales, median $psf, 12 months vs the 12 before (private-condo-analysis)"
+ },
+ "updated": "2026-10-26",
+ "weights": [
+  0.4,
+  0.25,
+  0.15,
+  0.1,
+  0.1
+ ]
+}

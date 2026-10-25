@@ -19,11 +19,11 @@ const sim = ctx.result;
 
 const expect = {
   rent:  { paid: 202000, cashBack: 0,      net: -202000 },
-  hdb:   { paid: 454772, cashBack: 432886, net: -21886 },
-  condo: { paid: 856981, cashBack: 935415, net: 78435 },
+  hdb:   { paid: 459652, cashBack: 432886, net: -26766 },
+  condo: { paid: 871331, cashBack: 935415, net: 64085 },
 };
-// Wealth at exit with the default cash & income (start $600,000, $8,000/mo, invested at 4%).
-const expectWealth = { rent: 1173526, hdb: 1285699, condo: 1297074 };
+// Wealth at exit with the default cash & income (start $600,000; $11,500/mo income less $3,500 living costs and utilities; invested at 4%).
+const expectWealth = { rent: 1173526, hdb: 1280307, condo: 1281743 };
 let ok = true;
 for (const [k, e] of Object.entries(expect)) {
   const r = sim[k].result;

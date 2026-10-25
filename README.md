@@ -8,7 +8,7 @@ Sister project of [hdb-resale-dashboard](https://github.com/garethgoh99/hdb-resa
 
 ## What it shows
 
-- **Fair comparison by wealth:** all three paths start with the same cash and get the same monthly income. Whatever isn't spent on housing is invested at a return you set, and running out of cash costs shortfall interest. The verdict ranks the paths by **wealth at exit** (invested cash + sale proceeds), so a path that ties up more money in the home has to beat what that money would have earned invested.
+- **Fair comparison by wealth:** all three paths start with the same cash, earn the same monthly income and pay the same living costs and utilities. Whatever isn't spent on housing is invested at a return you set, and running out of cash costs shortfall interest. The verdict ranks the paths by **wealth at exit** (invested cash + sale proceeds), so a path that ties up more money in the home has to beat what that money would have earned invested.
 - **Cards:** wealth at exit with its breakdown, the lowest cash balance (flagged if it goes negative), and net gain at exit for each path (cash back from the sale minus everything paid in), with the breakdown behind it: loan, instalment, sale price, loan payoff, selling costs and SSD, price growth and the return on your cash (IRR).
 - **Time value of money:** optional. Discounts every monthly flow and the sale proceeds to the start month, so the comparison becomes an NPV.
 - **Charts:** net worth (invested cash + home equity), invested cash, net cost if you sold in any month, equity built, total paid out, and monthly cash out.
@@ -22,15 +22,15 @@ See [`docs/methods.md`](docs/methods.md) for every rule the calculation uses and
 
 ## Default scenario (Oct 2026)
 
-Start Oct 2026, exit Aug 2032 (HDB keys + 5-year MOP), HDB growth 2.0% and condo 2.5% a year. Each path starts with $600,000 and gets $8,000 a month, invested at 4%. The cash and income figures are placeholders; set your own.
+Start Oct 2026, exit Aug 2032 (HDB keys + 5-year MOP), HDB growth 2.0% and condo 2.5% a year. Each path starts with $600,000 and earns $11,500 a month; after $3,500 of living costs and utilities, $8,000 a month is left for housing, and what housing doesn't use is invested at 4%. Condo maintenance is $350/mo from TOP and HDB service & conservancy $80/mo from keys. The cash and income figures are placeholders; set your own.
 
 | Case | Wealth at exit | Net gain on housing |
 |---|---|---|
 | Rent | $1,173,526 | −$202,000 |
-| Resale HDB | $1,285,699 | −$21,886 |
-| Condo | **$1,297,074** | +$78,435 |
+| Resale HDB | $1,280,307 | −$26,766 |
+| Condo | **$1,281,743** | +$64,085 |
 
-On net gain alone the condo is $100K ahead of the HDB. Once the HDB buyer's spare cash is invested, the gap shrinks to about $11K, and at a 6% return the HDB comes out ahead. Rough guide only, not financial advice.
+On net gain alone the condo is about $91K ahead of the HDB. Once the HDB buyer's spare cash is invested, the gap shrinks to about $1.4K, and at a 6% return the HDB comes out about $50K ahead. Rough guide only, not financial advice.
 
 ## How it's deployed
 

@@ -223,9 +223,12 @@ table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
         <div class="scen-head"><h2>Cash &amp; income</h2><span class="tag">Same for all 3</span></div>
         <div class="grid2">
           <div class="f full"><label class="toggle"><input type="checkbox" id="w.on"> Compare total wealth (recommended)</label>
-            <span class="hint">Every case starts with the same cash and gets the same income each month. Whatever isn't spent on housing is invested, so paying less for housing is rewarded fairly.</span></div>
+            <span class="hint">Every case starts with the same cash, earns the same income and pays the same living costs and utilities each month. Only what's left after housing is invested, so paying less for housing is rewarded fairly.</span></div>
           <div class="f key" data-show="w.on"><label for="w.cash">Starting cash <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="w.cash" step="10000" min="0"></div><span class="hint">Cash plus CPF OA you can use today.</span></div>
-          <div class="f key" data-show="w.on"><label for="w.monthly">Monthly income <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="w.monthly" step="500" min="0"></div><span class="hint">Take-home pay plus CPF OA, minus living costs.</span></div>
+          <div class="f key" data-show="w.on"><label for="w.monthly">Monthly income <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="w.monthly" step="500" min="0"></div><span class="hint">Household take-home pay plus CPF OA contributions.</span></div>
+          <div class="f key" data-show="w.on"><label for="w.living">Living costs <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="w.living" step="100" min="0"></div><span class="hint">Monthly: food, transport, insurance, everything else.</span></div>
+          <div class="f" data-show="w.on"><label for="w.util">Utilities</label><div class="pre"><span>$</span><input type="number" id="w.util" step="10" min="0"></div><span class="hint">Monthly electricity, water, gas, internet.</span></div>
+          <div class="derived" data-show="w.on" id="w.derived"></div>
           <div class="f full" data-show="w.on"><span class="lab">Return on invested cash</span>
             <div class="presets" id="retPresets">
               <button class="btn small" type="button" data-ret="2.5">2.5% CPF OA</button>
@@ -234,6 +237,7 @@ table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
             </div></div>
           <div class="f" data-show="w.on"><label for="w.ret">Investment return</label><div class="post"><input type="number" id="w.ret" step="0.25" min="-10" max="20"><span>% p.a.</span></div></div>
           <div class="f" data-show="w.on"><label for="w.incGrowth">Income growth</label><div class="post"><input type="number" id="w.incGrowth" step="0.5" min="-10" max="20"><span>% p.a.</span></div><span class="hint">Steps up once a year.</span></div>
+          <div class="f" data-show="w.on"><label for="w.costGrowth">Cost inflation</label><div class="post"><input type="number" id="w.costGrowth" step="0.5" min="-10" max="20"><span>% p.a.</span></div><span class="hint">Living costs and utilities, once a year.</span></div>
           <details class="more full" data-show="w.on">
             <summary>More settings</summary>
             <div class="grid2">
@@ -284,6 +288,8 @@ table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
               <div class="f"><label for="h.legal">Legal &amp; valuation</label><div class="pre"><span>$</span><input type="number" id="h.legal" step="500" min="0"></div></div>
               <div class="f"><label for="h.absd">ABSD</label><select id="h.absd"><option value="0">None (first home)</option><option value="5">5% (PR, first home)</option><option value="20">20% (citizen, 2nd home)</option></select></div>
               <div class="f"><label for="h.reno">Renovation &amp; furnishing</label><div class="pre"><span>$</span><input type="number" id="h.reno" step="1000" min="0"></div><span class="hint">Paid at key collection. Not equity.</span></div>
+              <div class="f"><label for="h.scc">Service &amp; conservancy</label><div class="pre"><span>$</span><input type="number" id="h.scc" step="5" min="0"></div><span class="hint">Monthly town council charge, from keys.</span></div>
+              <div class="f"><label for="h.ptax">Property tax</label><div class="pre"><span>$</span><input type="number" id="h.ptax" step="5" min="0"></div><span class="hint">Monthly equivalent, from keys.</span></div>
               <div class="sub">Rent before key collection</div>
               <div class="f full"><label class="toggle"><input type="checkbox" id="h.rentOn"> I'll rent before key collection</label></div>
               <div class="f" data-show="h.rentOn"><label for="h.rentAmt">Monthly rent</label><div class="pre"><span>$</span><input type="number" id="h.rentAmt" step="100" min="0"></div></div>
@@ -303,6 +309,8 @@ table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
           <div class="f key"><span class="lab">Expected TOP <span class="chip-key">Key</span></span><div class="mp" data-month="c.top"></div><span class="hint">Key collection.</span></div>
           <div class="f"><label for="c.rateOv">Rate override</label><div class="post"><input type="number" id="c.rateOv" step="0.05" min="0" placeholder="uses bank rate"><span>% p.a.</span></div></div>
           <div class="f"><label for="c.tenure">Tenure</label><div class="post"><input type="number" id="c.tenure" min="5" max="35"><span>years</span></div></div>
+          <div class="f key"><label for="c.maint">Maintenance <span class="chip-key">Key</span></label><div class="pre"><span>$</span><input type="number" id="c.maint" step="10" min="0"></div><span class="hint">Monthly, from TOP.</span></div>
+          <div class="f"><label for="c.ptax">Property tax</label><div class="pre"><span>$</span><input type="number" id="c.ptax" step="10" min="0"></div><span class="hint">Monthly equivalent, from TOP.</span></div>
           <div class="f full"><label for="c.ltv">Loan size: <span class="num" id="c.ltvLab"></span> of price</label><input type="range" id="c.ltv" min="0" max="75" step="1" style="accent-color:var(--condo)"><span class="hint" id="c.capHint"></span></div>
           <div class="note" id="c.capNote" hidden></div>
           <div class="f full"><label class="toggle"><input type="checkbox" id="c.rentOn"> I'll rent while it's being built</label></div>
@@ -386,7 +394,7 @@ table.m tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
       <section class="panel foot">
         <h3 style="margin-bottom:6px">How this is worked out</h3>
         <ul>
-          <li><b>Wealth at exit</b> (the fair comparison): all three cases start with the same cash and get the same income every month. Each month, income minus that case's housing costs goes into an invested pot that grows at the return you set; if the pot goes below zero it is charged shortfall interest instead. Wealth at exit = the pot + what the sale returns. Cash or CPF used for the home is not double-counted: it leaves the pot when paid and comes back through the sale.</li>
+          <li><b>Wealth at exit</b> (the fair comparison): all three cases start with the same cash, earn the same income and pay the same living costs and utilities every month. Each month, income minus living costs, utilities and that case's housing costs (including condo maintenance and HDB service &amp; conservancy charges after keys) goes into an invested pot that grows at the return you set; if the pot goes below zero it is charged shortfall interest instead. Wealth at exit = the pot + what the sale returns. Cash or CPF used for the home is not double-counted: it leaves the pot when paid and comes back through the sale.</li>
           <li><b>Exit</b>: both homes are sold in the exit month. Cash back = sale price − loan still owed − agent fee − legal fees − any seller's stamp duty (condo: 16% / 12% / 8% / 4% if sold within 1 / 2 / 3 / 4 years of S&amp;P). <b>Net gain</b> = cash back − everything you paid in. Return on your cash is the annualised IRR of those monthly flows.</li>
           <li>CPF used for the home must be refunded to your CPF account, with accrued interest, when you sell. It's still your money, so it's counted as cash back here.</li>
           <li><b>Equity</b> is the share of the home you own: what you've paid towards the price plus loan principal repaid, plus any price growth you set. Rent builds no equity.</li>
@@ -457,6 +465,7 @@ function simulate(st){
     if(t===hPay){ out+=hUp; paid=hp; bal=hLoan; }
     else if(t>hPay&&bal>0.005){ const it=bal*hRate/12; const inst=Math.min(hInst,bal+it); out+=inst; bal-=inst-it; }
     if(t===hKeys) out+=+h.reno||0;
+    if(t>=hKeys) out+=(+h.scc||0)+(+h.ptax||0);
     const val = t>=hPay? hp*Math.pow(1+(+h.apprec||0)/100,(t-hPay)/12):0;
     hdb.out[t]=out; hdb.bal[t]=bal; hdb.eq[t]= t>=hPay? (paid-bal)+(val-hp):0;
   }
@@ -492,6 +501,7 @@ function simulate(st){
     if(cb>0.005 && first!=null){ const rem=Math.max(1,cTen*12-(t-first)+1); const it=cb*cRate/12; const inst=pmt(cRate/12,rem,cb); out+=inst; cb-=inst-it; lastInst=inst; instAt[t]=inst; }
     if(draw[t]){ cb+=draw[t]; cpaid+=draw[t]; }
     if(t===top) out+=+c.reno||0;
+    if(t>=top) out+=(+c.maint||0)+(+c.ptax||0);
     const val= t>=sp? cp*Math.pow(1+(+c.apprec||0)/100,(t-sp)/12):0;
     condo.out[t]=out; condo.bal[t]=cb; condo.eq[t]= t>=Math.min(mi(c.otp),sp)? (cpaid-cb)+(t>=sp?val-cp:0):0;
   }
@@ -500,7 +510,7 @@ function simulate(st){
   condo.fullInst=instAt[lastDraw+1]!=null?instAt[lastDraw+1]:pmt(cRate/12, first!=null?Math.max(1,cTen*12-(lastDraw-first)):cTen*12, cLoan);
   split.forEach(s=>addEv(condo,mi(s.date),`Condo ${s.name} (${s.pct}%)`+(s.loan>0?(s.cash>0?" · you + bank":" · bank pays"):" · you pay")));
   if(c.rentOn) addEv(condo,mi(c.rentStart),"Condo case: rent while building");
-  addEv(condo,top,"Condo keys (TOP)");
+  addEv(condo,top,"Condo keys (TOP)"+((+c.maint||0)+(+c.ptax||0)>0?`, maintenance & tax $${fmt((+c.maint||0)+(+c.ptax||0))}/mo start`:""));
 
   // ---- Exit (sell at E)
   const exitOf=(price,start,g,fee,legal,bal,ssd)=>{ const yrs=Math.max(0,(E-start)/12); const value=E>=start?price*Math.pow(1+g/100,yrs):0;
@@ -515,17 +525,19 @@ function simulate(st){
   const w=st.w||{}, S0=+w.cash||0, inc0=+w.monthly||0, ig=(+w.incGrowth||0)/100;
   const rm=Math.pow(1+(+w.ret||0)/100,1/12)-1, bm=Math.pow(1+(+w.borrow||0)/100,1/12)-1;
   const incomeAt=t=>inc0*Math.pow(1+ig,Math.floor((t-S)/12));
+  const cg=(+w.costGrowth||0)/100, cost0=(+w.living||0)+(+w.util||0);
+  const costAt=t=>cost0*Math.pow(1+cg,Math.floor((t-S)/12));
   const potOf=(o,cb)=>{
     let pre=0; for(const t in o.out){ if(+t<S) pre+=o.out[t]; }   // paid before the start month comes out of starting cash
-    let P=S0-pre, earned=0, inc=0, min=Infinity, minAt=S, negAt=null; const pot=[], worth=[];
+    let P=S0-pre, earned=0, inc=0, living=0, min=Infinity, minAt=S, negAt=null; const pot=[], worth=[];
     for(const t of months){
       if(t>S){ const it=P*(P>=0?rm:bm); P+=it; earned+=it; }
-      const y=incomeAt(t); inc+=y; P+=y-(o.out[t]||0);
+      const y=incomeAt(t), lc=costAt(t); inc+=y; living+=lc; P+=y-lc-(o.out[t]||0);
       if(P<min){min=P;minAt=t;} if(P<0&&negAt==null) negAt=t;
       pot.push(P); worth.push(P+(o.eq[t]||0));
     }
     const potEnd=P; const wealth=P+cb;
-    return {pot,worth,potEnd,wealth,earned,income:inc,start:S0,pre,min,minAt,negAt};
+    return {pot,worth,potEnd,wealth,earned,income:inc,living,start:S0,pre,min,minAt,negAt};
   };
 
   // ---- Aggregate in period
@@ -561,10 +573,10 @@ function fmt(n){ return Math.round(n).toLocaleString("en-SG"); }
 
 const DEFAULTS={
   g:{start:"2026-10",end:"2032-08",sora:1.23,spread:0.30,tvm:false,disc:2.5,age:30,income:""},
-  w:{on:true,cash:600000,monthly:8000,ret:4,incGrowth:0,borrow:6},
+  w:{on:true,cash:600000,monthly:11500,living:3300,util:200,ret:4,incGrowth:0,costGrowth:0,borrow:6},
   r:{amt:2000,start:"2027-08",stepOn:true,stepDate:"2030-01",amt2:4500,endOn:false,end:"2035-01"},
-  h:{price:900000,pay:"2027-01",keys:"2027-08",loanType:"hdb",hdbRate:2.6,rateOv:"",tenure:25,ltv:75,mop:5,legal:3000,absd:"0",reno:0,apprec:2,sellFee:1,sellLegal:2500,rentOn:false,rentAmt:2000,rentStart:"2027-01"},
-  c:{price:1980000,otp:"2026-10",sp:"2026-10",top:"2029-04",csc:12,laid:true,rateOv:"",tenure:30,ltv:75,absd:"0",legal:3000,reno:0,apprec:2.5,sellFee:1,sellLegal:3000,rentOn:true,rentAmt:2500,rentStart:"2027-07",stagesAuto:true,stages:null}
+  h:{price:900000,pay:"2027-01",keys:"2027-08",loanType:"hdb",hdbRate:2.6,rateOv:"",tenure:25,ltv:75,mop:5,legal:3000,absd:"0",reno:0,scc:80,ptax:0,apprec:2,sellFee:1,sellLegal:2500,rentOn:false,rentAmt:2000,rentStart:"2027-01"},
+  c:{price:1980000,otp:"2026-10",sp:"2026-10",top:"2029-04",csc:12,laid:true,rateOv:"",tenure:30,ltv:75,absd:"0",legal:3000,reno:0,maint:350,ptax:0,apprec:2.5,sellFee:1,sellLegal:3000,rentOn:true,rentAmt:2500,rentStart:"2027-07",stagesAuto:true,stages:null}
 };
 const SORA_NOW=1.23;
 const KEY="housing-case-v2";
@@ -593,7 +605,7 @@ function syncMonth(el){ const v=get(el.dataset.month); if(!v) return; const [y,m
 document.querySelectorAll("[data-month]").forEach(buildMonth);
 
 /* ---------- plain inputs ---------- */
-const FIELDS=["w.on","w.cash","w.monthly","w.ret","w.incGrowth","w.borrow","g.sora","g.spread","g.tvm","g.disc","g.age","g.income","r.amt","r.stepOn","r.amt2","r.endOn","h.price","h.loanType","h.hdbRate","h.rateOv","h.tenure","h.ltv","h.mop","h.legal","h.absd","h.reno","h.apprec","h.rentOn","h.rentAmt","c.price","c.rateOv","c.tenure","c.ltv","c.csc","c.laid","c.absd","c.legal","c.reno","c.apprec","c.rentOn","h.sellFee","h.sellLegal","c.sellFee","c.sellLegal","c.rentAmt"];
+const FIELDS=["w.on","w.cash","w.monthly","w.living","w.util","w.costGrowth","h.scc","h.ptax","c.maint","c.ptax","w.ret","w.incGrowth","w.borrow","g.sora","g.spread","g.tvm","g.disc","g.age","g.income","r.amt","r.stepOn","r.amt2","r.endOn","h.price","h.loanType","h.hdbRate","h.rateOv","h.tenure","h.ltv","h.mop","h.legal","h.absd","h.reno","h.apprec","h.rentOn","h.rentAmt","c.price","c.rateOv","c.tenure","c.ltv","c.csc","c.laid","c.absd","c.legal","c.reno","c.apprec","c.rentOn","h.sellFee","h.sellLegal","c.sellFee","c.sellLegal","c.rentAmt"];
 FIELDS.forEach(p=>{ const el=$(p); if(!el) return;
   const ev=(el.type==="range"||el.type==="number"||el.type==="text")?"input":"change";
   el.addEventListener(ev,()=>{ let v= el.type==="checkbox"?el.checked : el.value;
@@ -705,7 +717,7 @@ function renderCards(sim){
   if(wm){
     const gap=val(best)-val(order[1]);
     $("vHead").textContent=`${names[best]} leaves you wealthiest: ${money(val(best))} at exit, ${money(gap)} ahead of ${names[order[1]]}`;
-    $("vSub").textContent=`Then ${names[order[1]]} at ${money(val(order[1]))} and ${names[order[2]]} at ${money(val(order[2]))}. Each starts with ${money(+st.w.cash||0)} and gets ${money(+st.w.monthly||0)} a month; whatever isn't spent on housing is invested at ${(+st.w.ret||0)}% a year. Wealth = invested cash + what the sale returns.`;
+    $("vSub").textContent=`Then ${names[order[1]]} at ${money(val(order[1]))} and ${names[order[2]]} at ${money(val(order[2]))}. Each starts with ${money(+st.w.cash||0)}, earns ${money(+st.w.monthly||0)} a month and spends ${money((+st.w.living||0)+(+st.w.util||0))} on living costs and utilities; what's left after housing is invested at ${(+st.w.ret||0)}% a year. Wealth = invested cash + what the sale returns.`;
   } else {
     $("vHead").textContent= val(best)>=0 ? `${names[best]} leaves you best off: ${money(val(best))} net gain at exit` : `${names[best]} costs you the least: ${money(-val(best))} net loss at exit`;
     $("vSub").textContent=`Next is ${names[order[1]]} at ${money(val(order[1]))}, then ${names[order[2]]} at ${money(val(order[2]))}. Net = cash back from the sale minus everything you paid in${tvm?", discounted":""}. Turn on “Compare total wealth” for a like-for-like comparison.`;
@@ -727,7 +739,7 @@ function renderCards(sim){
     let wrows="", wnote="";
     if(wm){
       const W=o.wealth;
-      wrows=`<dt>Starting cash</dt><dd>${money(W.start)}</dd><dt>Income over the period</dt><dd>${money(W.income)}</dd><dt>Less housing paid out</dt><dd>${money(-R.paidNominal-W.pre)}</dd><dt>Investment growth${W.earned<0?" (net of shortfall interest)":""}</dt><dd>${money(W.earned)}</dd><dt>Invested cash at exit</dt><dd>${money(W.potEnd)}</dd>${k!=="rent"?`<dt>Plus cash back from sale</dt><dd>${money(R.cashBack)}</dd>`:""}<dt><b>Wealth at exit</b></dt><dd><b>${money(W.wealth)}</b></dd>${tvm?`<dt>In today's dollars</dt><dd>${money(R.wealthD)}</dd>`:""}
+      wrows=`<dt>Starting cash</dt><dd>${money(W.start)}</dd><dt>Income over the period</dt><dd>${money(W.income)}</dd><dt>Less living costs &amp; utilities</dt><dd>${money(-W.living)}</dd><dt>Less housing paid out</dt><dd>${money(-R.paidNominal-W.pre)}</dd><dt>Investment growth${W.earned<0?" (net of shortfall interest)":""}</dt><dd>${money(W.earned)}</dd><dt>Invested cash at exit</dt><dd>${money(W.potEnd)}</dd>${k!=="rent"?`<dt>Plus cash back from sale</dt><dd>${money(R.cashBack)}</dd>`:""}<dt><b>Wealth at exit</b></dt><dd><b>${money(W.wealth)}</b></dd>${tvm?`<dt>In today's dollars</dt><dd>${money(R.wealthD)}</dd>`:""}
         <div class="sep"></div><dt>Net gain on housing</dt><dd>${money(R.gainNominal)}</dd><div class="sep"></div>`;
       if(W.negAt!=null) wnote=`<div class="afford"><span class="pill bad">Cash runs out ${mlab(W.negAt)} · lowest ${money(W.min)} (${mlab(W.minAt)})</span></div>`;
       else wnote=`<div class="afford"><span class="pill ok">Lowest cash ${money(W.min)} · ${mlab(W.minAt)}</span></div>`;
@@ -765,10 +777,12 @@ function renderDerived(sim){
   capNote("h.capNote",h,+st.h.ltv,+st.h.tenure); capNote("c.capNote",c,+st.c.ltv,+st.c.tenure);
   $("h.derived").innerHTML=`<span>Downpayment (equity)</span><span class="num">${money(h.down)}</span><span>Stamp duty</span><span class="num">${money(h.bsd)}</span><span>Total at completion</span><span class="num"><b>${money(h.up)}</b></span><span>Loan · monthly</span><span class="num">${money(h.loan)} · ${money(h.inst)}</span><span>Earliest sale (MOP)</span><span class="num">${mlab(mi(st.h.keys)+Math.round((+st.h.mop||0)*12))}</span>`;
   const own=(+st.c.price||0)*(1-c.ltv);
-  $("c.derived").innerHTML=`<span>Your share (equity)</span><span class="num">${money(own)}</span><span>Stamp duty</span><span class="num">${money(c.bsd)}</span><span>Total upfront incl. fees</span><span class="num"><b>${money(c.up)}</b></span><span>Loan · after CSC</span><span class="num">${money(c.loan)} · ${money(c.fullInst)}</span><span>Bank starts paying</span><span class="num">${c.first!=null?mlab(c.first):"–"}</span>`;
+  $("c.derived").innerHTML=`<span>Your share (equity)</span><span class="num">${money(own)}</span><span>Stamp duty</span><span class="num">${money(c.bsd)}</span><span>Total upfront incl. fees</span><span class="num"><b>${money(c.up)}</b></span><span>Loan · after CSC</span><span class="num">${money(c.loan)} · ${money(c.fullInst)}</span><span>Bank starts paying</span><span class="num">${c.first!=null?mlab(c.first):"–"}</span><span>Running costs from TOP</span><span class="num">${money((+st.c.maint||0)+(+st.c.ptax||0))}/mo</span>`;
   const hx=h.exit, cx=c.exit;
   $("exitDerived").innerHTML=`<span>HDB sale price at exit</span><span class="num">${money(hx.value)}</span><span>Condo sale price at exit</span><span class="num">${money(cx.value)}</span><span>Condo seller's stamp duty</span><span class="num">${cx.ssd>0?money(cx.ssd):"None (held 4+ yrs)"}</span><span>Earliest HDB exit (MOP)</span><span class="num">${mlab(h.mopEnd)}</span>`;
   $("d.bank").textContent=sim.bankRate.toFixed(2)+"% p.a.";
+  const spare=(+st.w.monthly||0)-(+st.w.living||0)-(+st.w.util||0);
+  $("w.derived").innerHTML=`<span>Left for housing &amp; investing</span><span class="num"><b>${money(spare)}</b>/mo</span>`;
 }
 
 /* ---------- timeline ---------- */

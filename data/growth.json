@@ -1,15 +1,15 @@
 {
  "hdb": {
-  "rate": 0.05358813227933017,
+  "rate": 0.04792736248921484,
   "yoy": [
-   0.008441961514587204,
-   0.08135320177204997,
-   0.06383890317052265,
-   0.08189122373300362,
-   0.12108089381604037
+   0.0034545537456833753,
+   0.08001761514300654,
+   0.059020513468349245,
+   0.07490974387310922,
+   0.10197085797626548
   ],
   "to": "2026Q3",
-  "basis": "HDB Resale Price Index, 4 quarters vs the 4 before (seed value; replaced by hdb-resale-dashboard's median $psf on the first workflow run)"
+  "basis": "All-Singapore HDB resale, median $psf, 4 quarters vs the 4 before (hdb-resale-dashboard)"
  },
  "condoResale": {
   "rate": 0.05053626330252159,
@@ -33,7 +33,7 @@
   "to": "2026-09",
   "basis": "RCR condo resales + sub-sales, median $psf, 12 months vs the 12 before (private-condo-analysis)"
  },
- "updated": "2026-10-26",
+ "updated": "2026-10-25",
  "weights": [
   0.4,
   0.25,

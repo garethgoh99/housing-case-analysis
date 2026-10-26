@@ -264,7 +264,7 @@ table.m td.neg{color:var(--bad)}
           <details class="more full">
             <summary>More settings</summary>
             <div class="grid2">
-              <div class="f"><label for="w.costGrowth">Cost inflation</label><div class="post"><input type="number" id="w.costGrowth" step="0.5" min="-10" max="20"><span>% p.a.</span></div><span class="hint">Living costs, utilities and typical rent, once a year.</span></div>
+              <div class="f"><label for="w.costGrowth">Cost inflation</label><div class="post"><input type="number" id="w.costGrowth" step="0.5" min="-10" max="20"><span>% p.a.</span></div><span class="hint">Living costs, utilities, typical rent, maintenance, S&amp;CC and property tax, once a year.</span></div>
               <div class="f"><label for="w.borrow">Shortfall interest</label><div class="post"><input type="number" id="w.borrow" step="0.5" min="0" max="30"><span>% p.a.</span></div><span class="hint">Charged while a case's cash is below zero.</span></div>
             </div>
           </details>
@@ -480,7 +480,7 @@ function simTile(t,ctx){
         add(m,"loan",inst); bal-=inst-it; lastInst=inst; instAt[m]=inst; }
       if(draw[m]){ bal+=draw[m]; paid+=draw[m]; if(first==null){ first=m; } if(mode==="fixed") fixedInst=pmt(rate/12,ten*12,bal); }
       if(m===M) add(m,"buy",N(t.reno));
-      if(m>=runFrom) add(m,"run",run);
+      if(m>=runFrom) add(m,"run",run*infl(m));
       if(m>=M){ add(m,"util",u(m)); if(firstOwn==null) firstOwn=m; }
       if(grantM===m&&grant>0) add(m,"grant",-grant);
       const val= m>=acq? base*Math.pow(1+gr,Math.max(0,m-g0)/12):0; // value counts from acquisition; growth from g0

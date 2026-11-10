@@ -1,8 +1,8 @@
 {
  "hdb": {
-  "rate": 0.047927689876470815,
+  "rate": 0.04794420021291993,
   "yoy": [
-   0.0034553722138233045,
+   0.0034966480549460943,
    0.08001761514300654,
    0.059020513468349245,
    0.07490974387310922,
@@ -12,9 +12,9 @@
   "basis": "All-Singapore HDB resale, median $psf, 4 quarters vs the 4 before (hdb-resale-dashboard)"
  },
  "condoResale": {
-  "rate": 0.050110651072159076,
+  "rate": 0.050471422085570705,
   "yoy": [
-   0.035485544582796624,
+   0.03629727936297278,
    0.05029281277728481,
    0.07193732193732183,
    0.0754156664690504
@@ -23,9 +23,9 @@
   "basis": "RCR condo resales, median $psf, 12 months vs the 12 before (private-condo-analysis)"
  },
  "condoNew": {
-  "rate": 0.0444488833752229,
+  "rate": 0.04471858509950958,
   "yoy": [
-   0.024792449534349004,
+   0.02539927841399403,
    0.04546056451099889,
    0.06420643336868137,
    0.09090909090909083
@@ -33,7 +33,7 @@
   "to": "2026-10",
   "basis": "RCR condo resales + sub-sales, median $psf, 12 months vs the 12 before (private-condo-analysis)"
  },
- "updated": "2026-11-03",
+ "updated": "2026-11-10",
  "weights": [
   0.4,
   0.25,
